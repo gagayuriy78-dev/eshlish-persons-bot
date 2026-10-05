@@ -1,0 +1,51 @@
+Mening Telegram Mini App loyihamda authorization muammosi bor.
+
+MUAMMO:
+Eski Telegram bot BotFather orqali o‘chirib yuborilgan. Men yangi Telegram bot yaratdim va uning yangi Bot API tokenini Replit Secrets/Environment Variables orqali loyihaga uladim.
+
+Lekin Telegram Mini App ochilganda quyidagi xabar chiqmoqda:
+
+"Avtorizatsiya muddati tugagan"
+"Mini ilovani yopib, bot orqali qayta oching."
+
+MUHIM:
+Men yangi botdan foydalanmoqchiman. Eski botga, eski bot tokeniga yoki eski bot username/ID'siga bog‘liq hech qanday authorization qolmasligi kerak.
+
+VAZIFA:
+Loyihani to‘liq tekshir va authorization tizimini yangi botga moslab tuzat.
+
+Quyidagilarni tekshir:
+
+1. BOT_TOKEN qayerlarda ishlatilayotganini top.
+2. Eski bot tokeni hardcode qilingan joylar bo‘lsa olib tashla.
+3. Eski bot username, bot ID, Telegram WebApp URL yoki boshqa eski bot konfiguratsiyasi qolgan bo‘lsa top.
+4. Telegram Mini App initData / initDataUnsafe authorization tekshiruvini tekshir.
+5. Backend yangi BOT_TOKEN bilan Telegram initData signature/hash'ini to‘g‘ri validate qilayotganini tekshir.
+6. Eski session, JWT, authorization cache yoki database'dagi eski botga bog‘langan ma'lumotlar muammo keltirib chiqarmayotganini tekshir.
+7. Frontend yangi bot orqali ochilganda Telegram WebApp'dan keladigan initData backendga to‘g‘ri yuborilayotganini tekshir.
+8. Backend authorization endpointlari yangi bot bilan ishlayotganini tekshir.
+9. Agar authorization muddati tekshirilayotgan bo‘lsa, Telegram initData'ning auth_date/expiry tekshiruvini noto‘g‘ri ishlayotgan joyini tuzat.
+10. Foydalanuvchi eski Mini App sessiyasidan qolib ketgan bo‘lsa, yangi sessiyani to‘g‘ri yaratish mexanizmini qo‘sh.
+11. Frontenddagi "Avtorizatsiya muddati tugagan" xabari qaysi API response yoki kod shartidan chiqayotganini aniq top.
+12. API response'larni tekshir va authorization xatosining haqiqiy sababini aniqlash uchun kerakli logging qo‘sh.
+13. Yangi bot tokenini kodga hardcode QILMA. Faqat environment variable / Replit Secrets'dan ol.
+14. Security sababli tokenni loglarga, frontendga yoki response'ga chiqarma.
+
+ENVIRONMENT:
+Replit Secrets'dagi yangi bot token nomini mavjud loyihadagi konfiguratsiyaga mos ishlat. Agar BOT_TOKEN mavjud bo‘lsa, undan foydalan. Agar boshqa nom ishlatilayotgan bo‘lsa, mavjud strukturani buzmasdan to‘g‘ri sozla.
+
+MUHIM:
+Mavjud bot funksiyalarini buzma.
+Database ma'lumotlarini o‘chirib yuborma.
+Faqat eski botga bog‘langan authorization/configuration qismlarini yangila.
+Frontend dizaynini o‘zgartirma.
+
+Oxirida:
+- qaysi fayllarda muammo topilganini ko‘rsat;
+- nima o‘zgartirilganini tushuntir;
+- yangi bot authorization flow qanday ishlashini tekshir;
+- barcha mavjud API endpointlarni buzmagan holda test qil;
+- agar Replit'da environment variable yoki boshqa konfiguratsiya qo‘lda sozlanishi kerak bo‘lsa, menga aniq ayt.
+
+ENG MUHIM TALAB:
+Koddagi barcha eski botga bog‘langan authorization ma'lumotlarini topib, yangi bot bilan to‘liq ishlaydigan holatga keltir. Shunchaki xatolik xabarini yashirma yoki authorization tekshiruvini o‘chirib qo‘yma — haqiqiy Telegram authorization'ni to‘g‘ri ishlat.

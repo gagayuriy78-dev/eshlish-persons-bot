@@ -1,0 +1,6 @@
+- [Python packaging in the monorepo](python-monorepo-packaging.md) — configure setuptools explicitly when Python shares top-level folders with other workspace packages.
+- [Mini App dev-preview testing](miniapp-dev-testing.md) — demo users via ?dev=N; temporary admin override recipe for verifying admin screens.
+- [Telegram quiz safeguards](telegram-quiz-safeguards.md) — repeated-question retries need issuance identity; local SQLite security state is not safe to scale across instances.
+- [GitHub tree verification](github-tree-verification.md) — recursive tree results include directories; count only blob entries when verifying uploaded files.
+- [Render API deployment workflow](render-api-deployment.md) — retrieve the current OpenAPI spec and verify the service/deploy state; docs UI may intermittently block ordinary paths.
+- [Bot production hosting](bot-production-hosting.md) — production is the user's Google Cloud VM with polling/systemd; do not publish this project to Replit.

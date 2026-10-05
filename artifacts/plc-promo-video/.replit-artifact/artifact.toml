@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "9:16"
+previewPath = "/plc-promo-video/"
+title = "ISHLISH PERSONS Promo Film"
+description = "Vertical 9:16 animated promo film for the ISHLISH PERSONS Telegram Mini App, using Uzbek on-screen text and the soft-green brand palette."
+version = "1.0.0"
+id = "artifacts/plc-promo-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/plc-promo-video/" ]
+localPort = 25004
+
+[services.development]
+run = "pnpm --filter @workspace/plc-promo-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/plc-promo-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/plc-promo-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25004"
+BASE_PATH = "/plc-promo-video/"

@@ -1,0 +1,82 @@
+import asyncio
+import os
+import sqlite3
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import CommandStart
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+# Secret'dan tokenni olamiz
+TOKEN = os.environ.get("BOT_TOKEN")
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+# 1. Ma'lumotlar bazasini yaratish funksiyasi
+def init_db():
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    # Foydalanuvchilar jadvalini yaratamiz
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            telegram_id INTEGER PRIMARY KEY,
+            first_name TEXT,
+            current_level TEXT,
+            score INTEGER DEFAULT 0
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# 2. Daraja tanlash tugmalari (Inline Keyboard)
+def get_levels_keyboard():
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🇬🇧 A1 - Beginner", callback_data="level_A1"),
+         InlineKeyboardButton(text="🇬🇧 A2 - Elementary", callback_data="level_A2")],
+        [InlineKeyboardButton(text="🚀 B1 - Intermediate", callback_data="level_B1"),
+         InlineKeyboardButton(text="🚀 B2 - Upper-Int", callback_data="level_B2")],
+        [InlineKeyboardButton(text="🔥 C1 - Advanced", callback_data="level_C1"),
+         InlineKeyboardButton(text="🔥 C2 - Mastery", callback_data="level_C2")]
+    ])
+    return keyboard
+
+# 3. /start buyrug'ini qabul qilish
+@dp.message(CommandStart())
+async def start_handler(message: types.Message):
+    # Foydalanuvchini bazaga qo'shish (agar avval kirmagan bo'lsa)
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (telegram_id, first_name) VALUES (?, ?)", 
+                   (message.from_user.id, message.from_user.first_name))
+    conn.commit()
+    conn.close()
+    
+    await message.answer(
+        f"Salom, {message.from_user.first_name}! 🎓\n\nQaysi daraja bo'yicha ingliz tili testlarini ishlashni xohlaysiz? Quyidagilardan birini tanlang 👇",
+        reply_markup=get_levels_keyboard()
+    )
+
+# 4. Tugma bosilganda ishlaydigan funksiya
+@dp.callback_query(F.data.startswith("level_"))
+async def level_selected(callback: types.CallbackQuery):
+    # Bosilgan tugmadan darajani ajratib olish (Masalan: 'A1')
+    selected_level = callback.data.split("_")[1] 
+    
+    # Bazada foydalanuvchi darajasini yangilash
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET current_level = ? WHERE telegram_id = ?", 
+                   (selected_level, callback.from_user.id))
+    conn.commit()
+    conn.close()
+    
+    # Xabarni o'zgartirish
+    await callback.message.edit_text(f"✅ Siz **{selected_level}** darajasini tanladingiz!\n\nTez orada bu yerda aralash savollar (Test va Yozma) boshlanadi...")
+    await callback.answer()
+
+# Botni ishga tushiruvchi asosiy funksiya
+async def main():
+    init_db() # Bot ishlashdan oldin bazani tekshiradi
+    print("Bot va Ma'lumotlar bazasi muvaffaqiyatli ishga tushdi...")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())

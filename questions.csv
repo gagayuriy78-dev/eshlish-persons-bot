@@ -1,0 +1,9 @@
+level,difficulty,category,question_type,question_text,option_a,option_b,option_c,option_d,correct_answer
+A1,,,test,I ___ a student.,am,is,are,be,am
+A1,,,write,Olma so'zining inglizcha tarjimasini yozing.,,,,,apple
+,Oson,Grammatika,test,She ___ a teacher.,am,is,are,be,is
+,Oson,Yaqin so'zlar,write,Big so'zining yaqin ma'nosini yozing.,,,,,large
+,O'rta,Grammatika,write,They ___ football every Sunday. (to'g'ri fe'lni yozing),,,,,play
+,O'rta,Yaqin so'zlar,test,Choose the word closest in meaning to quick.,slow,fast,late,weak,fast
+,Murakkab,Grammatika,test,"If I ___ more time, I would learn another language.",have,had,will have,am having,had
+,Murakkab,Yaqin so'zlar,write,Happy so'zining yaqin ma'nosini yozing.,,,,,joyful

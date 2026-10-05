@@ -1,0 +1,127 @@
+@import 'tailwindcss';
+
+:root {
+  --color-primary: #3b7954;
+  --color-secondary: #76bf91;
+  --color-accent: #fdb48c;
+
+  --color-bg-light: #f5faf6;
+  --color-bg-dark: #153726;
+  --color-bg-muted: #e8f4eb;
+
+  --color-text-primary: #173324;
+  --color-text-secondary: #55705d;
+  --color-text-muted: #809689;
+  --color-text-inverse: #ffffff;
+
+  --color-success: #34875b;
+  --color-warning: #f59e0b;
+  --color-error: #f2705f;
+
+  --aqua: #76bf91;
+  --teal: #3b7954;
+  --mint: #a5d7b2;
+  --sky: #cde8d3;
+  --peach: #fdb48c;
+  --coral: #f2705f;
+  --ink: #173324;
+
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'Plus Jakarta Sans', sans-serif;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg-light: var(--color-bg-light);
+  --color-bg-dark: var(--color-bg-dark);
+  --color-bg-muted: var(--color-bg-muted);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-inverse: var(--color-text-inverse);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.video-media-frame {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.video-media-frame > :is(img, video) {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
+}
+
+.video-media-frame[data-media-fit='contain'] > :is(img, video) {
+  object-fit: contain;
+}
+
+.video-media-frame[data-media-position='top'] > :is(img, video) {
+  object-position: top;
+}
+
+.video-media-frame[data-media-position='right'] > :is(img, video) {
+  object-position: right;
+}
+
+.video-media-frame[data-media-position='bottom'] > :is(img, video) {
+  object-position: bottom;
+}
+
+.video-media-frame[data-media-position='left'] > :is(img, video) {
+  object-position: left;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Frosted glass without backdrop-filter (cheap to render and record). */
+.glass {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(242, 250, 244, 0.84));
+  border: 0.3vmin solid rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 0.3vmin 0 rgba(255, 255, 255, 1);
+}
+
+.glass-shadow {
+  box-shadow:
+    inset 0 0.3vmin 0 rgba(255, 255, 255, 1),
+    0 3vmin 6vmin -3vmin rgba(45, 105, 66, 0.32);
+}
+
+.field-aqua {
+  background:
+    radial-gradient(45% 28% at 8% 8%, rgba(177, 224, 185, 0.78), transparent 70%),
+    radial-gradient(40% 24% at 96% 18%, rgba(255, 210, 186, 0.7), transparent 70%),
+    radial-gradient(48% 26% at 92% 74%, rgba(180, 224, 190, 0.62), transparent 70%),
+    radial-gradient(46% 26% at 0% 94%, rgba(202, 234, 209, 0.68), transparent 70%),
+    var(--color-bg-light);
+}
+
+.dots {
+  background-image: radial-gradient(rgba(59, 121, 84, 0.25) 0.25vmin, transparent 0.3vmin);
+  background-size: 2.4vmin 2.4vmin;
+}

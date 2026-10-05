@@ -1,0 +1,230 @@
+import asyncio
+import os
+import sqlite3
+import csv
+import random
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import CommandStart
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+
+TOKEN = os.environ.get("BOT_TOKEN")
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+# ---- BAZA FUNKSIYALARI ----
+def init_db():
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            telegram_id INTEGER PRIMARY KEY,
+            first_name TEXT,
+            current_level TEXT,
+            score INTEGER DEFAULT 0
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            level TEXT,
+            question_type TEXT,
+            question_text TEXT,
+            option_a TEXT, option_b TEXT, option_c TEXT, option_d TEXT,
+            correct_answer TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def import_questions_from_csv():
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM questions")
+    if cursor.fetchone()[0] == 0 and os.path.exists("questions.csv"):
+        with open("questions.csv", "r", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            next(reader)
+            data = [tuple(row) for row in reader if row]
+            cursor.executemany("""
+                INSERT INTO questions (level, question_type, question_text, option_a, option_b, option_c, option_d, correct_answer)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, data)
+    conn.commit()
+    conn.close()
+
+# ---- FSM (HOLATLAR) ----
+class QuizState(StatesGroup):
+    testing = State() # Foydalanuvchi test yechayotgan holat
+
+# ---- KLAWIATURALAR ----
+def get_levels_keyboard():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🇬🇧 A1"), KeyboardButton(text="🇬🇧 A2")],
+            [KeyboardButton(text="🚀 B1"), KeyboardButton(text="🚀 B2")],
+            [KeyboardButton(text="🔥 C1"), KeyboardButton(text="🔥 C2")]
+        ],
+        resize_keyboard=True, input_field_placeholder="Darajani tanlang..."
+    )
+
+# ---- BUYRUQLAR ----
+@dp.message(CommandStart())
+async def start_handler(message: types.Message, state: FSMContext):
+    await state.clear() # Agar test yechayotgan bo'lsa, to'xtatadi
+    
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR IGNORE INTO users (telegram_id, first_name) VALUES (?, ?)", 
+                   (message.from_user.id, message.from_user.first_name))
+    conn.commit()
+    conn.close()
+    
+    await message.answer(
+        f"Salom, {message.from_user.first_name}! 🎓\n\nQaysi daraja bo'yicha ingliz tili testlarini ishlashni xohlaysiz?",
+        reply_markup=get_levels_keyboard()
+    )
+
+# ---- DARAJA TANLASH VA TESTNI BOSHLASH ----
+levels_list = ["🇬🇧 A1", "🇬🇧 A2", "🚀 B1", "🚀 B2", "🔥 C1", "🔥 C2"]
+
+@dp.message(F.text.in_(levels_list))
+async def start_quiz(message: types.Message, state: FSMContext):
+    selected_level = message.text.split(" ")[1] # "🇬🇧 A1" dan "A1" ni oladi
+    
+    # Bazadan shu darajaga oid 30 ta tasodifiy savolni tortib olish
+    conn = sqlite3.connect("bot_database.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET current_level = ? WHERE telegram_id = ?", (selected_level, message.from_user.id))
+    cursor.execute("SELECT * FROM questions WHERE level = ? ORDER BY RANDOM() LIMIT 30", (selected_level,))
+    questions = cursor.fetchall()
+    conn.commit()
+    conn.close()
+    
+    if len(questions) == 0:
+        await message.answer("Ushbu daraja uchun hali savollar kiritilmagan.")
+        return
+        
+    # FSM Xotirasiga savollarni saqlaymiz
+    await state.update_data(questions=questions, current_index=0, correct_answers=0, level=selected_level)
+    await state.set_state(QuizState.testing)
+    
+    await message.answer(f"✅ Siz **{selected_level}** darajasini tanladingiz!\nTest boshlandi! Jami 30 ta savol.", reply_markup=ReplyKeyboardRemove())
+    
+    await ask_question(message, state)
+
+# ---- SAVOL BERISH FUNKSIYASI ----
+async def ask_question(message_or_call, state: FSMContext):
+    data = await state.get_data()
+    questions = data['questions']
+    index = data['current_index']
+    
+    # Agar 30 ta savol tugagan bo'lsa, natijani e'lon qilamiz
+    if index >= len(questions):
+        correct = data['correct_answers']
+        total = len(questions)
+        
+        # Umumiy ballni bazaga qo'shish
+        conn = sqlite3.connect("bot_database.db")
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET score = score + ? WHERE telegram_id = ?", (correct, message_or_call.from_user.id))
+        conn.commit()
+        conn.close()
+        
+        text = f"🎉 **Test yakunlandi!**\n\n📊 Siz {total} ta savoldan **{correct}** tasiga to'g'ri javob berdingiz.\n\nYana ishlash uchun /start ni bosing."
+        
+        if isinstance(message_or_call, types.Message):
+            await message_or_call.answer(text)
+        else:
+            await message_or_call.message.answer(text)
+            
+        await state.clear()
+        return
+
+    # Keyingi savolni shakllantirish
+    q = questions[index]
+    q_type, q_text = q[2], q[3]
+    
+    text = f"📝 **Savol {index + 1}/30:**\n\n{q_text}"
+    
+    if q_type == 'test':
+        # Variantlarni aralashtiramiz
+        options = [q[4], q[5], q[6], q[7]]
+        random.shuffle(options)
+        
+        # Xotiraga variantlarni va to'g'ri javobni (q[8]) saqlab qo'yamiz
+        await state.update_data(current_options=options, correct_ans=q[8])
+        
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text=options[0], callback_data="opt_0"),
+             InlineKeyboardButton(text=options[1], callback_data="opt_1")],
+            [InlineKeyboardButton(text=options[2], callback_data="opt_2"),
+             InlineKeyboardButton(text=options[3], callback_data="opt_3")]
+        ])
+        if isinstance(message_or_call, types.Message):
+            await message_or_call.answer(text, reply_markup=keyboard)
+        else:
+            await message_or_call.message.answer(text, reply_markup=keyboard)
+            
+    elif q_type == 'write':
+        await state.update_data(correct_ans=q[8])
+        text += "\n\n*(Javobingizni klaviaturada yozib yuboring)*"
+        
+        if isinstance(message_or_call, types.Message):
+            await message_or_call.answer(text)
+        else:
+            await message_or_call.message.answer(text)
+
+# ---- JAVOBLARNI QABUL QILISH ----
+# 1. Inline tugma (test) javoblari uchun
+@dp.callback_query(QuizState.testing, F.data.startswith("opt_"))
+async def handle_test_answer(callback: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    selected_opt_index = int(callback.data.split("_")[1])
+    selected_text = data['current_options'][selected_opt_index]
+    correct_ans = data['correct_ans']
+    
+    # Tekshiramiz
+    if str(selected_text).strip().lower() == str(correct_ans).strip().lower():
+        await state.update_data(correct_answers=data['correct_answers'] + 1)
+        await callback.message.edit_text(f"{callback.message.text}\n\n✅ **To'g'ri!**")
+    else:
+        await callback.message.edit_text(f"{callback.message.text}\n\n❌ **Xato!** To'g'ri javob: {correct_ans}")
+        
+    await state.update_data(current_index=data['current_index'] + 1)
+    await callback.answer()
+    
+    # Keyingi savol
+    await ask_question(callback, state)
+
+# 2. Yozma (write) javoblar uchun
+@dp.message(QuizState.testing)
+async def handle_write_answer(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    user_text = message.text
+    correct_ans = data['correct_ans']
+    
+    # Tekshiramiz (kichik harflarga o'tkazib, bo'sh joylarni olib tashlaymiz)
+    if str(user_text).strip().lower() == str(correct_ans).strip().lower():
+        await state.update_data(correct_answers=data['correct_answers'] + 1)
+        await message.answer("✅ **To'g'ri!**")
+    else:
+        await message.answer(f"❌ **Xato!** To'g'ri javob: {correct_ans}")
+        
+    await state.update_data(current_index=data['current_index'] + 1)
+    
+    # Keyingi savol
+    await ask_question(message, state)
+
+
+# ---- ASOSIY FUNKSIYA ----
+async def main():
+    init_db() 
+    import_questions_from_csv()
+    print("Bot ishga tushdi va test o'tkazishga tayyor...")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())

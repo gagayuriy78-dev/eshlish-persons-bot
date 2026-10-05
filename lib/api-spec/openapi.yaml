@@ -1,0 +1,4024 @@
+# Do not change info.title; import paths depend on it.
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Api",
+  "version": "0.2.0",
+  "description": "Persons LC English Challenge API"
+ },
+ "servers": [
+  {
+   "url": "/api",
+   "description": "Base API path"
+  }
+ ],
+ "tags": [
+  {
+   "name": "health"
+  },
+  {
+   "name": "app"
+  },
+  {
+   "name": "me"
+  },
+  {
+   "name": "games"
+  },
+  {
+   "name": "leaderboard"
+  },
+  {
+   "name": "referrals"
+  },
+  {
+   "name": "support"
+  },
+  {
+   "name": "admin"
+  }
+ ],
+ "paths": {
+  "/healthz": {
+   "get": {
+    "operationId": "healthCheck",
+    "tags": [
+     "health"
+    ],
+    "summary": "Health check",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HealthStatus"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/config": {
+   "get": {
+    "operationId": "getAppConfig",
+    "tags": [
+     "app"
+    ],
+    "summary": "Public app configuration",
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AppConfig"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/session": {
+   "post": {
+    "operationId": "startSession",
+    "tags": [
+     "me"
+    ],
+    "summary": "Validate Telegram auth, create/refresh the user",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SessionInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Me"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/me": {
+   "get": {
+    "operationId": "getMe",
+    "tags": [
+     "me"
+    ],
+    "summary": "Current user profile",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Me"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "operationId": "updateMe",
+    "tags": [
+     "me"
+    ],
+    "summary": "Update language or region",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UpdateMeInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Me"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/me/phone": {
+   "post": {
+    "operationId": "submitPhone",
+    "tags": [
+     "me"
+    ],
+    "summary": "Submit phone (signed Telegram contact preferred)",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PhoneInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Me"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/me/region": {
+   "post": {
+    "operationId": "submitRegion",
+    "tags": [
+     "me"
+    ],
+    "summary": "Select region and complete onboarding",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RegionInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Me"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/pro/status": {
+   "get": {
+    "operationId": "getProStatus",
+    "tags": [
+     "games"
+    ],
+    "summary": "PRO availability, hearts and timer",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProStatus"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games": {
+   "post": {
+    "operationId": "startGame",
+    "tags": [
+     "games"
+    ],
+    "summary": "Start a Basic or PRO game",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StartGameInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/GameState"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gameId}": {
+   "get": {
+    "operationId": "getGame",
+    "tags": [
+     "games"
+    ],
+    "summary": "Game state / result",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "gameId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/GameState"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gameId}/question": {
+   "get": {
+    "operationId": "getGameQuestion",
+    "tags": [
+     "games"
+    ],
+    "summary": "Issue or resume the current server-timed question",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "gameId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QuestionPayload"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gameId}/answer": {
+   "post": {
+    "operationId": "answerGameQuestion",
+    "tags": [
+     "games"
+    ],
+    "summary": "Submit an answer (omit optionIndex on timeout)",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "gameId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AnswerInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AnswerResult"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/games/{gameId}/abandon": {
+   "post": {
+    "operationId": "abandonGame",
+    "tags": [
+     "games"
+    ],
+    "summary": "Leave the current game",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "gameId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/GameState"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/leaderboard": {
+   "get": {
+    "operationId": "getLeaderboard",
+    "tags": [
+     "leaderboard"
+    ],
+    "summary": "Weekly or overall ranking",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "period",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "weekly",
+        "overall"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LeaderboardResponse"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/referrals": {
+   "get": {
+    "operationId": "getReferrals",
+    "tags": [
+     "referrals"
+    ],
+    "summary": "My referral link and progress",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReferralSummary"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/support": {
+   "get": {
+    "operationId": "listMySupportMessages",
+    "tags": [
+     "support"
+    ],
+    "summary": "My support messages",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/SupportMessage"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "operationId": "sendSupportMessage",
+    "tags": [
+     "support"
+    ],
+    "summary": "Write to support",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SupportInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SupportMessage"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/stats": {
+   "get": {
+    "operationId": "getAdminStats",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Dashboard and analytics",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminStats"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/users": {
+   "get": {
+    "operationId": "listAdminUsers",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Users with phone numbers (admin only)",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "region",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "level",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "mode",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "pro",
+        "basic",
+        "none"
+       ]
+      }
+     },
+     {
+      "name": "from",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "format": "date"
+      }
+     },
+     {
+      "name": "to",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "format": "date"
+      }
+     },
+     {
+      "name": "hasReferrals",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean"
+      }
+     },
+     {
+      "name": "page",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     },
+     {
+      "name": "pageSize",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 100
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminUserList"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/pro": {
+   "get": {
+    "operationId": "getAdminProMonitor",
+    "tags": [
+     "admin"
+    ],
+    "summary": "PRO challenge monitoring",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminProMonitor"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/questions": {
+   "get": {
+    "operationId": "listAdminQuestions",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Question bank",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "level",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string"
+      }
+     },
+     {
+      "name": "page",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     },
+     {
+      "name": "pageSize",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 100
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminQuestionList"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "operationId": "createAdminQuestion",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Create question",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AdminQuestionInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminQuestion"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/questions/{questionId}": {
+   "patch": {
+    "operationId": "updateAdminQuestion",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Edit question",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "questionId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AdminQuestionInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminQuestion"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "operationId": "deleteAdminQuestion",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Delete question",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "questionId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OkResponse"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/referrals": {
+   "get": {
+    "operationId": "listAdminReferrals",
+    "tags": [
+     "admin"
+    ],
+    "summary": "All referrals",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "page",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     },
+     {
+      "name": "pageSize",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "maximum": 100
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminReferralList"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/support": {
+   "get": {
+    "operationId": "listAdminSupport",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Support inbox",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "new",
+        "read",
+        "resolved"
+       ]
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/AdminSupportMessage"
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/support/{messageId}": {
+   "patch": {
+    "operationId": "updateAdminSupport",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Change support message status",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "messageId",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AdminSupportUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminSupportMessage"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/admin/settings": {
+   "get": {
+    "operationId": "getAdminSettings",
+    "tags": [
+     "admin"
+    ],
+    "summary": "Configuration and audit log",
+    "security": [
+     {
+      "TelegramInitData": []
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AdminSettings"
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "Invalid input",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Unauthorized",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Forbidden",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Not found",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Conflict",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ErrorResponse"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "securitySchemes": {
+   "TelegramInitData": {
+    "type": "apiKey",
+    "in": "header",
+    "name": "X-Telegram-Init-Data",
+    "description": "Raw Telegram WebApp initData, HMAC validated with the bot token"
+   }
+  },
+  "schemas": {
+   "HealthStatus": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "status"
+    ],
+    "properties": {
+     "status": {
+      "type": "string"
+     }
+    }
+   },
+   "ErrorResponse": {
+    "type": "object",
+    "required": [
+     "error"
+    ],
+    "properties": {
+     "error": {
+      "type": "string"
+     },
+     "code": {
+      "type": "string"
+     }
+    }
+   },
+   "OkResponse": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "ok"
+    ],
+    "properties": {
+     "ok": {
+      "type": "boolean"
+     }
+    }
+   },
+   "AppConfig": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "supportPhone",
+     "prizeUzs",
+     "regions",
+     "levels",
+     "botUsername"
+    ],
+    "properties": {
+     "supportPhone": {
+      "type": "string"
+     },
+     "prizeUzs": {
+      "type": "integer"
+     },
+     "regions": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "Toshkent shahri",
+        "Toshkent viloyati",
+        "Samarqand",
+        "Buxoro",
+        "Andijon",
+        "Farg‘ona",
+        "Namangan",
+        "Qashqadaryo",
+        "Surxondaryo",
+        "Xorazm",
+        "Navoiy",
+        "Jizzax"
+       ]
+      }
+     },
+     "levels": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1",
+        "C2"
+       ]
+      }
+     },
+     "botUsername": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    }
+   },
+   "SessionInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+     "ref": {
+      "type": "string",
+      "maxLength": 64
+     },
+     "refSig": {
+      "type": "string",
+      "maxLength": 128
+     }
+    }
+   },
+   "UserStats": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "basicTests",
+     "proAttempts",
+     "bestBasicPercentage",
+     "bestProPercentage",
+     "referrals",
+     "rank"
+    ],
+    "properties": {
+     "basicTests": {
+      "type": "integer"
+     },
+     "proAttempts": {
+      "type": "integer"
+     },
+     "bestBasicPercentage": {
+      "type": "integer"
+     },
+     "bestProPercentage": {
+      "type": "integer"
+     },
+     "referrals": {
+      "type": "integer"
+     },
+     "rank": {
+      "type": [
+       "integer",
+       "null"
+      ]
+     }
+    }
+   },
+   "Me": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "telegramId",
+     "firstName",
+     "lastName",
+     "username",
+     "photoUrl",
+     "phoneNumber",
+     "phoneVerified",
+     "region",
+     "language",
+     "englishLevel",
+     "points",
+     "proHearts",
+     "extraChances",
+     "isAdmin",
+     "onboardingComplete",
+     "referralLink",
+     "registrationDate",
+     "stats"
+    ],
+    "properties": {
+     "telegramId": {
+      "type": "integer"
+     },
+     "firstName": {
+      "type": "string"
+     },
+     "lastName": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "username": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "photoUrl": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "phoneNumber": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "phoneVerified": {
+      "type": "boolean"
+     },
+     "region": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "language": {
+      "type": "string",
+      "enum": [
+       "uz",
+       "en"
+      ]
+     },
+     "englishLevel": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "points": {
+      "type": "integer"
+     },
+     "proHearts": {
+      "type": "integer"
+     },
+     "extraChances": {
+      "type": "integer"
+     },
+     "isAdmin": {
+      "type": "boolean"
+     },
+     "onboardingComplete": {
+      "type": "boolean"
+     },
+     "referralLink": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "registrationDate": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "stats": {
+      "$ref": "#/components/schemas/UserStats"
+     }
+    }
+   },
+   "UpdateMeInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+     "language": {
+      "type": "string",
+      "enum": [
+       "uz",
+       "en"
+      ]
+     },
+     "region": {
+      "type": "string",
+      "enum": [
+       "Toshkent shahri",
+       "Toshkent viloyati",
+       "Samarqand",
+       "Buxoro",
+       "Andijon",
+       "Farg‘ona",
+       "Namangan",
+       "Qashqadaryo",
+       "Surxondaryo",
+       "Xorazm",
+       "Navoiy",
+       "Jizzax"
+      ]
+     }
+    }
+   },
+   "PhoneInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+     "contactResponse": {
+      "type": "string",
+      "maxLength": 4096
+     },
+     "phoneNumber": {
+      "type": "string",
+      "maxLength": 32
+     }
+    }
+   },
+   "RegionInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "region"
+    ],
+    "properties": {
+     "region": {
+      "type": "string",
+      "enum": [
+       "Toshkent shahri",
+       "Toshkent viloyati",
+       "Samarqand",
+       "Buxoro",
+       "Andijon",
+       "Farg‘ona",
+       "Namangan",
+       "Qashqadaryo",
+       "Surxondaryo",
+       "Xorazm",
+       "Navoiy",
+       "Jizzax"
+      ]
+     }
+    }
+   },
+   "ProStatus": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "canPlay",
+     "freeAvailable",
+     "extraChances",
+     "hearts",
+     "maxHearts",
+     "prizeUzs",
+     "timerSeconds",
+     "totalQuestions",
+     "activeGameId",
+     "nextFreeAt"
+    ],
+    "properties": {
+     "canPlay": {
+      "type": "boolean"
+     },
+     "freeAvailable": {
+      "type": "boolean"
+     },
+     "extraChances": {
+      "type": "integer"
+     },
+     "hearts": {
+      "type": "integer"
+     },
+     "maxHearts": {
+      "type": "integer"
+     },
+     "prizeUzs": {
+      "type": "integer"
+     },
+     "timerSeconds": {
+      "type": "integer"
+     },
+     "totalQuestions": {
+      "type": "integer"
+     },
+     "activeGameId": {
+      "type": [
+       "integer",
+       "null"
+      ]
+     },
+     "nextFreeAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "StartGameInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "mode"
+    ],
+    "properties": {
+     "mode": {
+      "type": "string",
+      "enum": [
+       "basic",
+       "pro"
+      ]
+     },
+     "level": {
+      "type": "string",
+      "enum": [
+       "A1",
+       "A2",
+       "B1",
+       "B2",
+       "C1",
+       "C2"
+      ]
+     }
+    }
+   },
+   "GameState": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "mode",
+     "level",
+     "status",
+     "totalQuestions",
+     "answered",
+     "correctCount",
+     "wrongCount",
+     "hearts",
+     "maxHearts",
+     "pointsEarned",
+     "percentage",
+     "achievedLevel",
+     "passed",
+     "certificateCode",
+     "startedAt",
+     "finishedAt"
+    ],
+    "properties": {
+     "id": {
+      "type": "integer"
+     },
+     "mode": {
+      "type": "string",
+      "enum": [
+       "basic",
+       "pro"
+      ]
+     },
+     "level": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "active",
+       "finished",
+       "eliminated",
+       "won",
+       "abandoned"
+      ]
+     },
+     "totalQuestions": {
+      "type": "integer"
+     },
+     "answered": {
+      "type": "integer"
+     },
+     "correctCount": {
+      "type": "integer"
+     },
+     "wrongCount": {
+      "type": "integer"
+     },
+     "hearts": {
+      "type": "integer"
+     },
+     "maxHearts": {
+      "type": "integer"
+     },
+     "pointsEarned": {
+      "type": "integer"
+     },
+     "percentage": {
+      "type": "integer"
+     },
+     "achievedLevel": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "passed": {
+      "type": [
+       "boolean",
+       "null"
+      ]
+     },
+     "certificateCode": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "startedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "finishedAt": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date-time"
+     }
+    }
+   },
+   "QuestionPayload": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "gameId",
+     "questionId",
+     "position",
+     "total",
+     "question",
+     "options",
+     "serverTime",
+     "expiresAt",
+     "allowedSeconds",
+     "hearts"
+    ],
+    "properties": {
+     "gameId": {
+      "type": "integer"
+     },
+     "questionId": {
+      "type": "integer"
+     },
+     "position": {
+      "type": "integer"
+     },
+     "total": {
+      "type": "integer"
+     },
+     "question": {
+      "type": "string"
+     },
+     "options": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+       "type": "string"
+      }
+     },
+     "serverTime": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "allowedSeconds": {
+      "type": "integer"
+     },
+     "hearts": {
+      "type": "integer"
+     }
+    }
+   },
+   "AnswerInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "questionId"
+    ],
+    "properties": {
+     "questionId": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "optionIndex": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3
+     }
+    }
+   },
+   "AnswerResult": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "result",
+     "heartLost",
+     "hearts",
+     "game"
+    ],
+    "properties": {
+     "result": {
+      "type": "string",
+      "enum": [
+       "correct",
+       "wrong",
+       "timeout"
+      ]
+     },
+     "heartLost": {
+      "type": "boolean"
+     },
+     "hearts": {
+      "type": "integer"
+     },
+     "game": {
+      "$ref": "#/components/schemas/GameState"
+     }
+    }
+   },
+   "LeaderboardEntry": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "rank",
+     "name",
+     "photoUrl",
+     "region",
+     "level",
+     "points",
+     "isMe"
+    ],
+    "properties": {
+     "rank": {
+      "type": "integer"
+     },
+     "name": {
+      "type": "string"
+     },
+     "photoUrl": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "region": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "level": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "points": {
+      "type": "integer"
+     },
+     "isMe": {
+      "type": "boolean"
+     }
+    }
+   },
+   "LeaderboardResponse": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "period",
+     "entries",
+     "me"
+    ],
+    "properties": {
+     "period": {
+      "type": "string"
+     },
+     "entries": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/LeaderboardEntry"
+      }
+     },
+     "me": {
+      "$ref": "#/components/schemas/LeaderboardEntry",
+      "type": [
+       null,
+       "null"
+      ]
+     }
+    }
+   },
+   "ReferralItem": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "name",
+     "region",
+     "joinedAt"
+    ],
+    "properties": {
+     "name": {
+      "type": "string"
+     },
+     "region": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "joinedAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "ReferralSummary": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "link",
+     "count",
+     "target",
+     "progress",
+     "extraChancesEarned",
+     "extraChances",
+     "referrals"
+    ],
+    "properties": {
+     "link": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "count": {
+      "type": "integer"
+     },
+     "target": {
+      "type": "integer"
+     },
+     "progress": {
+      "type": "integer"
+     },
+     "extraChancesEarned": {
+      "type": "integer"
+     },
+     "extraChances": {
+      "type": "integer"
+     },
+     "referrals": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/ReferralItem"
+      }
+     }
+    }
+   },
+   "SupportInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "message"
+    ],
+    "properties": {
+     "message": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2000
+     }
+    }
+   },
+   "SupportMessage": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "message",
+     "status",
+     "createdAt"
+    ],
+    "properties": {
+     "id": {
+      "type": "integer"
+     },
+     "message": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string"
+     },
+     "createdAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "AdminStats": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "totalUsers",
+     "newToday",
+     "activeUsers",
+     "proUsers",
+     "basicUsers",
+     "phoneLeads",
+     "referrals",
+     "activeProGames",
+     "openSupport",
+     "questions",
+     "signupsByDay",
+     "gamesByDay",
+     "levelDistribution",
+     "regionDistribution",
+     "hardestQuestions"
+    ],
+    "properties": {
+     "totalUsers": {
+      "type": "integer"
+     },
+     "newToday": {
+      "type": "integer"
+     },
+     "activeUsers": {
+      "type": "integer"
+     },
+     "proUsers": {
+      "type": "integer"
+     },
+     "basicUsers": {
+      "type": "integer"
+     },
+     "phoneLeads": {
+      "type": "integer"
+     },
+     "referrals": {
+      "type": "integer"
+     },
+     "activeProGames": {
+      "type": "integer"
+     },
+     "openSupport": {
+      "type": "integer"
+     },
+     "questions": {
+      "type": "integer"
+     },
+     "signupsByDay": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "date",
+        "count"
+       ],
+       "properties": {
+        "date": {
+         "type": "string"
+        },
+        "count": {
+         "type": "integer"
+        }
+       }
+      }
+     },
+     "gamesByDay": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "date",
+        "basic",
+        "pro"
+       ],
+       "properties": {
+        "date": {
+         "type": "string"
+        },
+        "basic": {
+         "type": "integer"
+        },
+        "pro": {
+         "type": "integer"
+        }
+       }
+      }
+     },
+     "levelDistribution": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "label",
+        "count"
+       ],
+       "properties": {
+        "label": {
+         "type": "string"
+        },
+        "count": {
+         "type": "integer"
+        }
+       }
+      }
+     },
+     "regionDistribution": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "label",
+        "count"
+       ],
+       "properties": {
+        "label": {
+         "type": "string"
+        },
+        "count": {
+         "type": "integer"
+        }
+       }
+      }
+     },
+     "hardestQuestions": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "id",
+        "text",
+        "level",
+        "served",
+        "failRate"
+       ],
+       "properties": {
+        "id": {
+         "type": "integer"
+        },
+        "text": {
+         "type": "string"
+        },
+        "level": {
+         "type": "string"
+        },
+        "served": {
+         "type": "integer"
+        },
+        "failRate": {
+         "type": "integer"
+        }
+       }
+      }
+     }
+    }
+   },
+   "AdminUser": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "telegramId",
+     "firstName",
+     "lastName",
+     "username",
+     "phoneNumber",
+     "phoneVerified",
+     "region",
+     "englishLevel",
+     "points",
+     "proHearts",
+     "extraChances",
+     "referralCount",
+     "basicTests",
+     "proAttempts",
+     "onboardingComplete",
+     "registrationDate",
+     "lastActive"
+    ],
+    "properties": {
+     "telegramId": {
+      "type": "integer"
+     },
+     "firstName": {
+      "type": "string"
+     },
+     "lastName": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "username": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "phoneNumber": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "phoneVerified": {
+      "type": "boolean"
+     },
+     "region": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "englishLevel": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "points": {
+      "type": "integer"
+     },
+     "proHearts": {
+      "type": "integer"
+     },
+     "extraChances": {
+      "type": "integer"
+     },
+     "referralCount": {
+      "type": "integer"
+     },
+     "basicTests": {
+      "type": "integer"
+     },
+     "proAttempts": {
+      "type": "integer"
+     },
+     "onboardingComplete": {
+      "type": "boolean"
+     },
+     "registrationDate": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "lastActive": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "AdminUserList": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "items",
+     "total",
+     "page",
+     "pageSize"
+    ],
+    "properties": {
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminUser"
+      }
+     },
+     "total": {
+      "type": "integer"
+     },
+     "page": {
+      "type": "integer"
+     },
+     "pageSize": {
+      "type": "integer"
+     }
+    }
+   },
+   "AdminProGame": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "gameId",
+     "telegramId",
+     "name",
+     "username",
+     "status",
+     "currentQuestion",
+     "total",
+     "correctCount",
+     "hearts",
+     "pointsEarned",
+     "startedAt",
+     "lastActivityAt",
+     "finishedAt"
+    ],
+    "properties": {
+     "gameId": {
+      "type": "integer"
+     },
+     "telegramId": {
+      "type": "integer"
+     },
+     "name": {
+      "type": "string"
+     },
+     "username": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "status": {
+      "type": "string"
+     },
+     "currentQuestion": {
+      "type": "integer"
+     },
+     "total": {
+      "type": "integer"
+     },
+     "correctCount": {
+      "type": "integer"
+     },
+     "hearts": {
+      "type": "integer"
+     },
+     "pointsEarned": {
+      "type": "integer"
+     },
+     "startedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "lastActivityAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "finishedAt": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date-time"
+     }
+    }
+   },
+   "AdminProMonitor": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "active",
+     "eliminated",
+     "winners",
+     "leaders"
+    ],
+    "properties": {
+     "active": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminProGame"
+      }
+     },
+     "eliminated": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminProGame"
+      }
+     },
+     "winners": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminProGame"
+      }
+     },
+     "leaders": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminProGame"
+      }
+     }
+    }
+   },
+   "AdminQuestion": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "level",
+     "difficulty",
+     "category",
+     "text",
+     "options",
+     "correctOption",
+     "isActive",
+     "timesServed",
+     "timesFailed",
+     "createdAt"
+    ],
+    "properties": {
+     "id": {
+      "type": "integer"
+     },
+     "level": {
+      "type": "string"
+     },
+     "difficulty": {
+      "type": "string"
+     },
+     "category": {
+      "type": "string"
+     },
+     "text": {
+      "type": "string"
+     },
+     "options": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     },
+     "correctOption": {
+      "type": "string"
+     },
+     "isActive": {
+      "type": "boolean"
+     },
+     "timesServed": {
+      "type": "integer"
+     },
+     "timesFailed": {
+      "type": "integer"
+     },
+     "createdAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "AdminQuestionInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "level",
+     "difficulty",
+     "category",
+     "text",
+     "options",
+     "correctOption"
+    ],
+    "properties": {
+     "level": {
+      "type": "string",
+      "enum": [
+       "A1",
+       "A2",
+       "B1",
+       "B2",
+       "C1",
+       "C2"
+      ]
+     },
+     "difficulty": {
+      "type": "string",
+      "enum": [
+       "easy",
+       "medium",
+       "hard"
+      ]
+     },
+     "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+     },
+     "text": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500
+     },
+     "options": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 200
+      }
+     },
+     "correctOption": {
+      "type": "string",
+      "enum": [
+       "A",
+       "B",
+       "C",
+       "D"
+      ]
+     },
+     "isActive": {
+      "type": "boolean"
+     }
+    }
+   },
+   "AdminQuestionList": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "items",
+     "total",
+     "page",
+     "pageSize"
+    ],
+    "properties": {
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminQuestion"
+      }
+     },
+     "total": {
+      "type": "integer"
+     },
+     "page": {
+      "type": "integer"
+     },
+     "pageSize": {
+      "type": "integer"
+     }
+    }
+   },
+   "AdminReferral": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "inviterId",
+     "inviterName",
+     "inviteeId",
+     "inviteeName",
+     "inviteeRegion",
+     "rewardPoints",
+     "createdAt"
+    ],
+    "properties": {
+     "id": {
+      "type": "integer"
+     },
+     "inviterId": {
+      "type": "integer"
+     },
+     "inviterName": {
+      "type": "string"
+     },
+     "inviteeId": {
+      "type": "integer"
+     },
+     "inviteeName": {
+      "type": "string"
+     },
+     "inviteeRegion": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "rewardPoints": {
+      "type": "integer"
+     },
+     "createdAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "AdminReferralList": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "items",
+     "total",
+     "page",
+     "pageSize",
+     "topInviters"
+    ],
+    "properties": {
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "#/components/schemas/AdminReferral"
+      }
+     },
+     "total": {
+      "type": "integer"
+     },
+     "page": {
+      "type": "integer"
+     },
+     "pageSize": {
+      "type": "integer"
+     },
+     "topInviters": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "telegramId",
+        "name",
+        "count"
+       ],
+       "properties": {
+        "telegramId": {
+         "type": "integer"
+        },
+        "name": {
+         "type": "string"
+        },
+        "count": {
+         "type": "integer"
+        }
+       }
+      }
+     }
+    }
+   },
+   "AdminSupportMessage": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "id",
+     "telegramId",
+     "userName",
+     "phone",
+     "message",
+     "status",
+     "forwarded",
+     "createdAt"
+    ],
+    "properties": {
+     "id": {
+      "type": "integer"
+     },
+     "telegramId": {
+      "type": "integer"
+     },
+     "userName": {
+      "type": "string"
+     },
+     "phone": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "message": {
+      "type": "string"
+     },
+     "status": {
+      "type": "string"
+     },
+     "forwarded": {
+      "type": "boolean"
+     },
+     "createdAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   },
+   "AdminSupportUpdate": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "status"
+    ],
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "new",
+       "read",
+       "resolved"
+      ]
+     }
+    }
+   },
+   "AdminSettings": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "adminIds",
+     "supportPhone",
+     "prizeUzs",
+     "dailyFreeProGames",
+     "maxHearts",
+     "basicQuestionCount",
+     "proQuestionCount",
+     "extraChanceReferrals",
+     "referralRewardPoints",
+     "currentTimerSeconds",
+     "activeGamesNow",
+     "timerRules",
+     "botUsername",
+     "recentActions"
+    ],
+    "properties": {
+     "adminIds": {
+      "type": "array",
+      "items": {
+       "type": "integer"
+      }
+     },
+     "supportPhone": {
+      "type": "string"
+     },
+     "prizeUzs": {
+      "type": "integer"
+     },
+     "dailyFreeProGames": {
+      "type": "integer"
+     },
+     "maxHearts": {
+      "type": "integer"
+     },
+     "basicQuestionCount": {
+      "type": "integer"
+     },
+     "proQuestionCount": {
+      "type": "integer"
+     },
+     "extraChanceReferrals": {
+      "type": "integer"
+     },
+     "referralRewardPoints": {
+      "type": "integer"
+     },
+     "currentTimerSeconds": {
+      "type": "integer"
+     },
+     "activeGamesNow": {
+      "type": "integer"
+     },
+     "timerRules": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "minActiveGames",
+        "seconds"
+       ],
+       "properties": {
+        "minActiveGames": {
+         "type": "integer"
+        },
+        "seconds": {
+         "type": "integer"
+        }
+       }
+      }
+     },
+     "botUsername": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "recentActions": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "id",
+        "adminId",
+        "action",
+        "targetType",
+        "targetId",
+        "createdAt"
+       ],
+       "properties": {
+        "id": {
+         "type": "integer"
+        },
+        "adminId": {
+         "type": "integer"
+        },
+        "action": {
+         "type": "string"
+        },
+        "targetType": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "targetId": {
+         "type": [
+          "string",
+          "null"
+         ]
+        },
+        "createdAt": {
+         "type": "string",
+         "format": "date-time"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

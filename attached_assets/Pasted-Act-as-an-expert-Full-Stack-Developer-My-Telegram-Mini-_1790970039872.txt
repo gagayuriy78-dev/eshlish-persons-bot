@@ -1,0 +1,28 @@
+Act as an expert Full-Stack Developer. My Telegram Mini App is stuck on a blank loading screen inside Telegram, and I also need to implement strict backend security for a high-stakes quiz mode.
+
+Please implement the following fixes and security features:
+
+1. Fix the Blank Loading Screen (Vite/React config for Replit):
+- Update `vite.config.js` (or `.ts`) to expose the server properly for Telegram Web App. Add this inside `defineConfig`:
+  server: { host: '0.0.0.0', port: 5173, strictPort: true, hmr: { clientPort: 443, overlay: false } }
+- Ensure `index.html` has `<script src="https://telegram.org/js/telegram-web-app.js"></script>` in the `<head>`.
+- In the main `App.jsx` (or `main.jsx`), safely wrap the Telegram SDK initialization so it doesn't crash if opened outside Telegram:
+  `useEffect(() => { try { window.Telegram?.WebApp?.ready(); window.Telegram?.WebApp?.expand(); } catch (e) { console.error(e); } }, []);`
+- Ensure the React root component renders safely without any undefined variable crashes blocking the UI.
+
+2. Implement Security Layer 1: Telegram initData Validation (Backend)
+- In the Python backend (FastAPI or Flask), create a utility function to cryptographically validate `window.Telegram.WebApp.initData` using the Telegram Bot Token. 
+- Ensure all API requests from the React frontend include this `initData` (e.g., in headers) to prove they are legitimate users opening the app inside Telegram, blocking browser-based cheating.
+
+3. Implement Security Layer 2: Hide Correct Answers (Full-Stack)
+- The React frontend should NEVER receive the `correct_answer`.
+- The API endpoint returning test questions must only send: `question_id`, `question_text`, and `options`.
+- When a user selects an answer, the frontend must send a POST request with `question_id` and `selected_option`. The Python backend validates it against the database and returns `{"is_correct": true/false}`.
+
+4. Implement Security Layer 3: Server-Side Timer & Anti-Cheat (Backend)
+- Do not trust the frontend React timer. 
+- When the backend sends a question, it must save the exact timestamp in the database or cache.
+- When the answer is submitted, calculate the time difference on the server. If it exceeds the allowed time limit (e.g., taking 8 seconds when the limit is 5 seconds), automatically mark the answer as "Failed/Timeout", even if the selected option was correct.
+- Implement basic rate-limiting to prevent users from spamming the submit endpoint.
+
+Please update both the frontend configuration and backend logic to reflect these critical fixes and security rules.

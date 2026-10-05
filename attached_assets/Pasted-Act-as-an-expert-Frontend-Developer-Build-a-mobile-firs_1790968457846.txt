@@ -1,0 +1,31 @@
+Act as an expert Frontend Developer. Build a mobile-first Telegram Web App (Mini App) UI for an English language testing platform called "Persons LC Challenge". 
+Use React.js, Vite, and Tailwind CSS. Integrate the @twa-dev/sdk for Telegram Web App features.
+
+Design System & Theme (Based on my reference):
+- Background: Very light grayish-blue (e.g., bg-slate-50 or #F4F6F9).
+- Cards: Solid white with soft, large rounded corners (rounded-3xl) and very soft drop shadows (shadow-sm).
+- Primary Action Buttons: Dark navy blue (#0A1128), full-width, heavily rounded (rounded-full or rounded-2xl), white bold text.
+- Accent Colors: Bright friendly blue (#4A90E2) for active states and gradients.
+- Typography: Clean sans-serif (Inter or similar), modern and readable.
+
+Please create the following layout with two main views (use state to switch between them):
+
+1. Home Screen:
+- Top Header: "Good afternoon, [User Name]" with a small pill on the top right showing a 💎 icon and "1200 pts".
+- Hero Card: A card with a soft light-blue gradient background. Inside, put a placeholder image div (for a mascot) and a small white speech bubble pointing to it saying: "Ready to test your English?".
+- Stats Section: Two side-by-side white cards (50% width each). Left one: "📚 Basic Level: A2". Right one: "🏆 Pro Score: 85%".
+- Action Area: A large, dark navy primary button saying "Start PRO Mode (Win 1M)". Below it, a slightly lighter button or outlined button saying "Start Basic Mode".
+- Bottom Navigation Bar: Fixed at the bottom, white background, containing 4 icons with labels: Home, Leaderboard, Friends, Profile.
+
+2. Active Test Screen (Focus Session style):
+- Top Bar: A back button (<) and title "PRO Mode - Question 1/20".
+- Timer Section: A visual progress bar or a large countdown number in the center, styled cleanly. 
+- Question Card: A large white card containing the English question text.
+- Options: 4 selectable rounded pill-shaped buttons for the answers (A, B, C, D). When selected, outline them in blue.
+- Bottom Action: A large dark navy button saying "Submit Answer".
+
+Technical requirements:
+- Make it fully responsive for mobile screens (w-full, max-w-md mx-auto).
+- Use Lucide-react for icons.
+- Ensure the layout is scrollable in the center but the bottom nav remains fixed.
+- Write clean, component-based React code. Do not write backend logic, focus entirely on a pixel-perfect, gamified UI based on the prompt.

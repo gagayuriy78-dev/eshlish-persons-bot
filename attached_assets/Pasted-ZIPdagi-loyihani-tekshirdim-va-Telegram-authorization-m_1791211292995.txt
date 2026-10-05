@@ -1,0 +1,74 @@
+ZIPdagi loyihani tekshirdim va Telegram authorization muammosini tuzatish kerak.
+
+MUAMMO ANIQ:
+Telegram Mini App ochilganda:
+"Avtorizatsiya muddati tugagan"
+degan xabar chiqmoqda.
+
+Men eski Telegram botni BotFather orqali o‘chirganman va YANGI Telegram bot yaratganman. Yangi bot tokeni Replit Secrets'da mavjud.
+
+KODNI TEKSHIRGANDA API server Telegram tokenni `TEST_TOKEN` environment variable orqali olayotgani ko‘rindi.
+
+MUHIM:
+Hozir kodni taxmin qilib o‘zgartirma. Avval quyidagi authorization flow'ni tekshir:
+
+1. `artifacts/api-server/src/middlewares/auth.ts`
+2. `artifacts/api-server/src/lib/telegram-auth.ts`
+3. `artifacts/api-server/src/lib/bot-api.ts`
+4. `artifacts/api-server/src/routes/me.ts`
+5. `artifacts/api-server/src/services/users.ts`
+6. `main.py`
+7. `artifacts/persons-lc-challenge/src/lib/telegram.ts`
+8. `artifacts/persons-lc-challenge/src/App.tsx`
+
+ASOSIY TEKSHIRUV:
+
+- API server haqiqatan Replit Secrets'dagi YANGI bot tokenni olayaptimi?
+- `TEST_TOKEN` secret mavjudmi?
+- `main.py` va API server bir xil YANGI bot tokenidan foydalanayaptimi?
+- Telegram Mini App `window.Telegram.WebApp.initData` ni olayaptimi?
+- Frontend `X-Telegram-Init-Data` header orqali initData'ni API serverga yuboryaptimi?
+- Backend shu initData'ni aynan yangi bot token bilan HMAC orqali tekshirayaptimi?
+- `auth_date` tekshiruvi to‘g‘ri ishlayaptimi?
+- Noto‘g‘ri token sabab `bad signature` bo‘lib, frontendda noto‘g‘ri ravishda "authorization expired" xabari ko‘rsatilmayaptimi?
+
+JUDA MUHIM:
+Hozir `AUTH_MAX_AGE_SECONDS = 24 * 60 * 60`.
+
+Buni shunchaki o‘chirib tashlama va authorization xavfsizligini pasaytirma.
+
+Agar `auth_date` haqiqatan eski bo‘lsa, Telegram yangi Mini App ochilganda yangi initData berishini hisobga olib flow'ni to‘g‘ri tuzat.
+
+Yana bir muhim muammo:
+`middlewares/auth.ts` ichida `bad signature` va `expired` ikkalasi ham frontendga bir xil umumiy authorization xatosi sifatida qaytmoqda.
+
+Debug qilish uchun server logiga:
+- `authFailure` sababini
+- request path
+- tokenning o‘zini EMAS
+
+chiqaradigan xavfsiz diagnostika qo‘sh.
+
+BOT TOKENNI HECH QACHON LOG QILMA.
+
+YANGI BOT:
+Backend `getBotUsername()` orqali `getMe` qilganda ham YANGI bot username qaytishi kerak.
+
+`main.py`dagi `TEST_TOKEN` ham yangi bot tokeni bilan ishlashi kerak.
+
+MUHIM:
+Agar muammo kodda emas, Replit Secret noto‘g‘ri nomlangan yoki eski token turgan bo‘lsa, menga aniq:
+"Replit Secrets'da `TEST_TOKEN` nomli secretni yangi bot tokeni bilan yangilash kerak"
+deb ayt.
+
+Koddagi authorizationni o‘chirib qo‘yma.
+401 xatoni yashirma.
+"expired" xabarini shunchaki olib tashlama.
+
+Yakunida:
+1. Muammoning aniq sababini top.
+2. Kodni tuzat.
+3. Yangi bot tokeni bilan API authorization flow'ni tekshir.
+4. Frontend → initData → API → Telegram HMAC validation zanjirini tekshir.
+5. Mavjud database, quiz, PRO, referral va admin funksiyalarini buzma.
+6. Qaysi fayllarni o‘zgartirganingni yoz.

@@ -1,0 +1,86 @@
+import uuid
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, BigInteger, Text
+from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import create_engine
+
+# Asosiy Base klassini yaratamiz
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    telegram_id = Column(BigInteger, unique=True, index=True, nullable=False)
+    full_name = Column(String(150), nullable=False)
+    phone_number = Column(String(20), nullable=True) # Ba'zilar raqam bermasligi mumkin
+    region = Column(String(50), nullable=True)
+    
+    # Reyting uchun index=True qildik, shunda minglab odam orasidan Top-100 ni qidirish qotmaydi
+    total_pro_score = Column(Integer, default=0, index=True) 
+    referred_by = Column(BigInteger, nullable=True) # Uni kim taklif qildi (TG ID)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    # Aloqalar (Relations)
+    sessions = relationship("GameSession", back_populates="user", cascade="all, delete-orphan")
+
+
+class Question(Base):
+    __tablename__ = 'questions'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    level = Column(String(10), nullable=False) # A1, A2, B1...
+    question_text = Column(Text, nullable=False)
+    
+    # JSONB orqali variantlarni {"A": "Apple", "B": "Banana"} shaklida saqlaymiz
+    options = Column(JSONB, nullable=False) 
+    correct_answer = Column(String(5), nullable=False) # A, B, C, D
+    
+    # Odamlar qanchalik ko'p xato qilsa, bu raqam shuncha oshadi (Pro rejim algoritmi uchun)
+    failure_rate = Column(Float, default=0.0) 
+
+
+class GameSession(Base):
+    __tablename__ = 'game_sessions'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
+    
+    mode = Column(String(20), nullable=False) # 'basic' yoki 'pro'
+    achieved_level = Column(String(10), nullable=True) # Qaysi darajani oldi
+    score = Column(Integer, default=0)
+    mistakes_count = Column(Integer, default=0)
+    played_at = Column(DateTime, default=datetime.utcnow)
+
+    # Aloqalar
+    user = relationship("User", back_populates="sessions")
+
+
+class Referral(Base):
+    __tablename__ = 'referrals'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inviter_id = Column(BigInteger, nullable=False, index=True) # Taklif qilgan odam
+    invitee_id = Column(BigInteger, nullable=False, unique=True) # Taklif qilingan (yangi kirgan) odam
+    
+    # "Ikkinchi imkoniyat"dan foydalandimi?
+    is_used = Column(Boolean, default=False) 
+
+# ==========================================
+# BAZANI YARATISH (Test qilish uchun kod)
+# ==========================================
+
+# Eslatma: 'postgresql://user:password@localhost/dbname' shaklida o'z bazangiz URL'ini yozasiz.
+# Supabase ishlatsangiz, u yerdagi Connection String'ni qo'yasiz.
+DATABASE_URL = "sqlite:///test_database.db" # Hozircha kompyuterda sinash uchun SQLite
+
+engine = create_engine(DATABASE_URL, echo=True)
+
+# Barcha jadvallarni bazaga yozish
+def create_tables():
+    Base.metadata.create_all(bind=engine)
+    print("Jadvallar muvaffaqiyatli yaratildi!")
+
+if __name__ == "__main__":
+    create_tables()

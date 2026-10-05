@@ -1,0 +1,188 @@
+import telebot
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+import sqlite3
+from PIL import Image, ImageDraw, ImageFont
+import io
+
+# O'zingizning bot tokeningizni va Admin ID raqamingizni kiritasiz
+TOKEN = "SIZNING_TOKENINGIZ"
+ADMIN_IDS = [123456789] 
+bot = telebot.TeleBot(TOKEN)
+bot_username = "SizningBotingiz_bot" # Botingizning yuzerneymini yozing (masalan: PersonsLC_bot)
+
+# ================= 1. SQLITE BAZANI ULASH =================
+conn = sqlite3.connect('persons.db', check_same_thread=False)
+cursor = conn.cursor()
+cursor.execute('''CREATE TABLE IF NOT EXISTS users
+                  (user_id INTEGER PRIMARY KEY, name TEXT, score INTEGER, level TEXT, phone TEXT)''')
+conn.commit()
+
+# ================= KLAVIATURALAR =================
+def main_menu():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(
+        KeyboardButton("🎓 Testni boshlash"),
+        KeyboardButton("👤 Profil"),
+        KeyboardButton("🏆 Reyting"),
+        KeyboardButton("🔗 Do'stlarni taklif qilish"), # Yangi: Referal
+        KeyboardButton("📞 Bepul dars")
+    )
+    return markup
+
+def contact_menu():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    # Yangi: Telefon raqamni avtomatik so'rash
+    markup.add(KeyboardButton("📱 Raqamni yuborish", request_contact=True)) 
+    markup.add(KeyboardButton("⬅️ Bosh menyu"))
+    return markup
+
+def back_menu():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(KeyboardButton("⬅️ Bosh menyu"))
+    return markup
+
+# ================= START VA REFERAL TIZIM =================
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    user_id = message.from_user.id
+    name = message.from_user.first_name
+    
+    # Referal ID ni aniqlash (t.me/bot?start=123456)
+    args = message.text.split()
+    
+    cursor.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
+    user = cursor.fetchone()
+    
+    if not user:
+        # Yangi foydalanuvchini bazaga qo'shish
+        cursor.execute("INSERT INTO users (user_id, name, score, level) VALUES (?, ?, ?, ?)", (user_id, name, 0, "Noma'lum"))
+        conn.commit()
+        
+        # Agar do'stining ssilkasi orqali kirgan bo'lsa
+        if len(args) > 1 and args[1].isdigit():
+            ref_id = int(args[1])
+            if ref_id != user_id:
+                # Do'stiga 50 ball qo'shish
+                cursor.execute("UPDATE users SET score = score + 50 WHERE user_id=?", (ref_id,))
+                conn.commit()
+                bot.send_message(ref_id, f"🎉 Tabriklaymiz! Do'stingiz {name} sizning havolangiz orqali kirdi. Sizga +50 ball berildi!")
+
+    bot.send_message(message.chat.id, 
+                     "Assalomu alaykum! Persons LC botiga xush kelibsiz.\nO'z darangizni sinab ko'ring va yetakchiga aylaning!", 
+                     reply_markup=main_menu())
+
+# ================= ASOSIY MENYU =================
+@bot.message_handler(func=lambda message: message.text in ["👤 Profil", "🏆 Reyting", "📞 Bepul dars", "🔗 Do'stlarni taklif qilish", "⬅️ Bosh menyu"])
+def handle_menu(message):
+    user_id = message.from_user.id
+    text = message.text
+
+    if text == "👤 Profil":
+        cursor.execute("SELECT score, level FROM users WHERE user_id=?", (user_id,))
+        user = cursor.fetchone()
+        bot.send_message(message.chat.id, f"👤 Ism: {message.from_user.first_name}\n🏆 Ball: {user[0]}\n📊 Daraja: {user[1]}\n\nSertifikat olish uchun test ishlashda davom eting!", reply_markup=main_menu())
+    
+    elif text == "🏆 Reyting":
+        cursor.execute("SELECT name, score FROM users ORDER BY score DESC LIMIT 10")
+        top_users = cursor.fetchall()
+        leaderboard = "🏆 Top 10 O'quvchilar:\n\n"
+        for i, (uname, score) in enumerate(top_users, 1):
+            leaderboard += f"{i}. {uname} — {score} ball\n"
+        bot.send_message(message.chat.id, leaderboard, reply_markup=main_menu())
+
+    elif text == "🔗 Do'stlarni taklif qilish":
+        ref_link = f"https://t.me/{bot_username}?start={user_id}"
+        bot.send_message(message.chat.id, 
+                         f"🚀 Bitta do'stingizni taklif qiling va **+50 ball** oling!\n\nSizning shaxsiy havolangiz:\n{ref_link}\n\nUshbu xabarni do'stlaringizga yuboring va reytingda peshqadam bo'ling!", 
+                         parse_mode="Markdown")
+
+    elif text == "📞 Bepul dars":
+        bot.send_message(message.chat.id, 
+                         "🎯 Ingliz tilini tezroq o'rganmoqchimisiz?\n\nBepul sinov darsimizga yozilish uchun pastdagi **'📱 Raqamni yuborish'** tugmasini bosing:", 
+                         reply_markup=contact_menu())
+        
+    elif text == "⬅️ Bosh menyu":
+        bot.send_message(message.chat.id, "Bosh menyudasiz:", reply_markup=main_menu())
+
+# ================= RAQAM QABUL QILISH (LEAD) =================
+@bot.message_handler(content_types=['contact'])
+def handle_contact(message):
+    phone = message.contact.phone_number
+    user_id = message.from_user.id
+    
+    # Raqamni bazaga saqlash
+    cursor.execute("UPDATE users SET phone=? WHERE user_id=?", (phone, user_id))
+    conn.commit()
+    
+    bot.send_message(message.chat.id, "✅ Raqamingiz qabul qilindi! Administratorlarimiz tez orada sizga aloqaga chiqishadi.", reply_markup=main_menu())
+    
+    # Adminlarga yangi mijoz haqida xabar berish
+    for admin in ADMIN_IDS:
+        bot.send_message(admin, f"🔥 Yangi mijoz (Lead)!\n\nIsmi: {message.from_user.first_name}\nRaqami: {phone}\nID: {user_id}")
+
+# ================= TEST VA SERTIFIKAT =================
+@bot.message_handler(func=lambda message: message.text == "🎓 Testni boshlash")
+def choose_level(message):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add("🟢 Oson", "🟡 O'rta", "🔴 Murakkab", "⬅️ Bosh menyu")
+    bot.send_message(message.chat.id, "Qiyinlik darajasini tanlang:", reply_markup=markup)
+
+@bot.message_handler(func=lambda message: message.text in ["🟢 Oson", "🟡 O'rta", "🔴 Murakkab"])
+def ask_question(message):
+    level = message.text
+    user_id = message.from_user.id
+    cursor.execute("UPDATE users SET level=? WHERE user_id=?", (level, user_id))
+    conn.commit()
+    
+    msg = bot.send_message(message.chat.id, 
+                           "Savol: Bo'sh joyni to'ldiring.\nI usually _____ my homework in the evening.\n\nJavobingizni klaviaturada yozib yuboring:", 
+                           reply_markup=back_menu())
+    bot.register_next_step_handler(msg, check_answer)
+
+def check_answer(message):
+    if message.text == "⬅️ Bosh menyu":
+        bot.send_message(message.chat.id, "Bosh menyu", reply_markup=main_menu())
+        return
+
+    user_id = message.from_user.id
+    cursor.execute("SELECT score, level FROM users WHERE user_id=?", (user_id,))
+    score, level = cursor.fetchone()
+
+    if message.text.strip().lower() == "do":
+        new_score = score + 10
+        cursor.execute("UPDATE users SET score=? WHERE user_id=?", (new_score, user_id))
+        conn.commit()
+        bot.send_message(message.chat.id, "✅ To'g'ri javob! +10 ball.", reply_markup=main_menu())
+        
+        # Har 50 ballda SERTIFIKAT yuborish (Vizual triggers)
+        if new_score == 50:
+            send_certificate(message.chat.id, message.from_user.first_name, new_score, level)
+    else:
+        bot.send_message(message.chat.id, "❌ Noto'g'ri javob. To'g'ri so'z 'do' edi.", reply_markup=main_menu())
+
+# Apple iOS Emoji stilidagi toza sertifikat generatsiyasi
+def send_certificate(chat_id, name, score, level):
+    # Toza oq fonda yaratiladi (realistik rasm emas, Apple stilida minimalist)
+    img = Image.new('RGB', (800, 500), color=(245, 245, 247)) 
+    d = ImageDraw.Draw(img)
+    
+    try:
+        # Replitda standart shriftlardan foydalanish
+        font_large = ImageFont.truetype("DejaVuSans-Bold.ttf", 60)
+        font_medium = ImageFont.truetype("DejaVuSans.ttf", 40)
+    except:
+        font_large = font_medium = ImageFont.load_default()
+
+    # Matnlarni chizish
+    d.text((50, 50), "🎓 Persons LC Certificate", fill=(29, 29, 31), font=font_large)
+    d.text((50, 150), f"Foydalanuvchi: {name}", fill=(86, 86, 90), font=font_medium)
+    d.text((50, 230), f"Daraja: {level}", fill=(86, 86, 90), font=font_medium)
+    d.text((50, 310), f"To'plangan ball: {score} 🏆", fill=(0, 102, 204), font=font_large)
+    
+    # Rasmni xotiraga saqlab, yuborish
+    bio = io.BytesIO()
+    img.save(bio, format='PNG')
+    bio.seek(0)
+    bot.send_photo(chat_id, photo=bio, caption="🎉 Tabriklaymiz! Siz reytingda ko'tarildingiz. Ushbu sertifikatni Storisga joylang va do'stlaringizni chaqiring!", reply_markup=main_menu())
+
+bot.polling(none_stop=True)

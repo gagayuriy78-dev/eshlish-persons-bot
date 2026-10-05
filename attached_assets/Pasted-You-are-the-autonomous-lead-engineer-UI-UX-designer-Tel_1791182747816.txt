@@ -1,0 +1,863 @@
+You are the autonomous lead engineer, UI/UX designer, Telegram Mini App specialist, backend engineer, and QA engineer for my project.
+
+PROJECT: PERSONS LC ENGLISH CHALLENGE
+
+IMPORTANT:
+DO NOT ASK ME FOR PERMISSION.
+DO NOT ASK ME WHAT TO DO NEXT.
+DO NOT STOP TO EXPLAIN.
+DO NOT WAIT FOR MY APPROVAL.
+
+Inspect the existing Replit project and IMPLEMENT ALL CHANGES BELOW YOURSELF. If you find bugs that prevent the requirements from working, fix them automatically.
+
+==================================================
+1. COMPLETE VISUAL REDESIGN
+==================================================
+
+Completely replace the current dark/green visual style.
+
+The new UI must be inspired by the reference images I provided:
+
+- premium modern mobile application
+- soft 3D illustrations
+- white/light background
+- aqua
+- turquoise
+- mint
+- soft blue
+- subtle peach/pink gradients
+- frosted glass
+- translucent cards
+- large rounded corners
+- soft shadows
+- elegant typography
+- clean spacing
+- premium Apple-like feeling
+- smooth microanimations
+
+DO NOT copy the dental application's content.
+COPY ONLY ITS VISUAL LANGUAGE.
+
+The final product should feel like:
+
+Apple-style premium mobile UI
++
+soft 3D glassmorphism
++
+modern educational app
++
+high-end gamification
+
+Absolutely remove:
+- black full-screen backgrounds
+- dark green panels
+- neon green borders
+- dense layouts
+- cheap-looking UI
+- excessive emojis
+- old green interface
+
+Use consistent professional icons instead of relying on emojis.
+
+==================================================
+2. TELEGRAM MINI APP MUST WORK
+==================================================
+
+The app currently works in Replit/browser but has problems when opened inside Telegram.
+
+FIX THE ROOT CAUSE.
+
+Correctly initialize:
+
+window.Telegram.WebApp
+
+Use:
+
+Telegram.WebApp.ready()
+Telegram.WebApp.expand()
+Telegram.WebApp.initData
+Telegram.WebApp.initDataUnsafe
+
+Handle Telegram iOS, Android and WebView correctly.
+
+The app must NEVER show a blank screen because Telegram WebApp APIs are unavailable.
+
+Create:
+- loading state
+- error state
+- retry button
+- browser development fallback
+
+Use safe areas:
+
+env(safe-area-inset-top)
+env(safe-area-inset-bottom)
+
+Make the entire UI responsive for:
+
+320px
+375px
+390px
+430px
+
+No horizontal scrolling.
+No clipped buttons.
+No content behind Telegram navigation.
+No broken bottom navigation.
+
+==================================================
+3. ONBOARDING
+==================================================
+
+First-time users MUST provide:
+
+1. Telegram identity
+2. Phone number
+3. Region
+
+Phone number is mandatory.
+
+Use Telegram's native contact/request mechanism where possible.
+
+Store securely:
+
+telegram_id
+username
+first_name
+last_name
+phone_number
+region
+registration_date
+referral_code
+referred_by
+language
+english_level
+points
+pro_hearts
+last_active
+
+Regions:
+
+Toshkent shahri
+Toshkent viloyati
+Samarqand
+Buxoro
+Andijon
+Farg‘ona
+Namangan
+Qashqadaryo
+Surxondaryo
+Xorazm
+Navoiy
+Jizzax
+
+Create a beautiful multi-step onboarding with the new premium visual style.
+
+==================================================
+4. HOME SCREEN
+==================================================
+
+Create a premium home page.
+
+Top:
+
+PERSONS LC CHALLENGE
+
+"Good afternoon, [Name]"
+
+Points pill:
+💎 1,200 pts
+
+Hero card:
+
+"YOUR NEXT WIN STARTS HERE"
+
+"Ready to test your English?"
+
+"A few good answers can take you a long way."
+
+Add a beautiful 3D English-learning illustration.
+
+Statistics:
+
+BASIC LEVEL
+A2
+
+PRO SCORE
+85%
+
+Then:
+
+"Choose your challenge"
+
+Primary:
+
+🏆 Start PRO Mode
+Win 1,000,000 UZS
+
+Secondary:
+
+📖 Start Basic Mode
+
+Use clean professional icons.
+
+==================================================
+5. BASIC MODE
+==================================================
+
+User selects:
+
+A1
+A2
+B1
+B2
+C1
+C2
+
+Then:
+
+20 questions
+Multiple choice
+Score
+Percentage
+CEFR result
+Certificate
+
+Create premium question cards.
+
+Show:
+
+Question 4 / 20
+
+Progress bar.
+
+At the end create a beautiful result screen and shareable certificate.
+
+==================================================
+6. PRO MODE
+==================================================
+
+Prize:
+
+1,000,000 UZS
+
+PRO is a survivor challenge.
+
+IMPORTANT CHANGE:
+
+USER HAS 2 HEARTS.
+
+Initial:
+
+❤️ ❤️
+
+First mistake:
+
+❤️ 🖤
+
+Second mistake:
+
+🖤 🖤
+
+Then:
+
+GAME OVER.
+
+The first mistake must NOT immediately end the game.
+
+The remaining heart must be saved server-side.
+
+At the top of the PRO question screen show:
+
+Question number
+Timer
+❤️ ❤️
+
+When a heart is lost:
+- subtle animation
+- haptic feedback if available
+- elegant red/pink feedback
+- continue the game if one heart remains
+
+Do not make this childish.
+
+Use premium 3D/glass heart visuals.
+
+==================================================
+7. SERVER-SIDE PROTECTION
+==================================================
+
+Never expose the correct answer to frontend.
+
+GET /api/question must return only:
+
+question
+4 options
+question ID
+server timestamp
+expiration timestamp
+allowed time
+
+Correct answer remains on server.
+
+POST /api/answer must validate:
+
+Telegram user
+game session
+question
+answer
+timer
+expiration
+game state
+remaining hearts
+
+Frontend must NEVER be trusted for:
+
+score
+timer
+hearts
+correct answers
+referrals
+game state
+
+Timeout = wrong answer.
+
+Dynamic timer:
+
+Normal: 12 seconds
+High activity: 8 seconds
+Very high activity: 5 seconds
+
+Calculate server-side.
+
+==================================================
+8. REFERRAL SYSTEM
+==================================================
+
+Every user has a unique referral link.
+
+Example:
+
+https://t.me/YOUR_BOT?start=ref_USERID
+
+A referral counts only when:
+
+- genuinely new Telegram user
+- enters through referral
+- completes onboarding
+- provides phone
+- selects region
+
+Do not count:
+existing users
+self-referrals
+duplicates
+fake frontend events
+
+Friends page:
+
+"Invite friends"
+
+"3 new friends = 1 extra chance"
+
+Show:
+
+2 / 3
+
+Progress bar.
+
+Buttons:
+
+Copy link
+Share on Telegram
+
+Show successful referrals.
+
+==================================================
+9. PROFILE
+==================================================
+
+Create a premium profile page.
+
+Show:
+
+Avatar
+Name
+Telegram username
+Points
+English level
+Region
+
+Statistics:
+
+Basic tests
+PRO attempts
+Best score
+Referrals
+
+Settings:
+
+Language
+Region
+Support
+
+==================================================
+10. LANGUAGE SWITCH MUST WORK
+==================================================
+
+The current language switch is broken.
+
+FIX IT COMPLETELY.
+
+Languages:
+
+🇺🇿 Uzbek
+🇬🇧 English
+
+Create a centralized translation system.
+
+Changing language must immediately update:
+
+Home
+Leaderboard
+Friends
+Profile
+Onboarding
+Basic
+PRO
+Support
+Buttons
+Errors
+Certificates
+Notifications
+
+Save language preference per user.
+
+==================================================
+11. SUPPORT
+==================================================
+
+Support phone:
+
+917119966
+
+Create:
+
+Help & Support
+
+"Write to support"
+
+User can send a message from the app.
+
+Store:
+
+user
+telegram_id
+phone
+message
+date
+status
+
+Admin must receive and see these messages.
+
+If possible, forward support messages to the admin Telegram account.
+
+==================================================
+12. ADMIN
+==================================================
+
+ADMIN TELEGRAM ID:
+
+884336506
+
+This user must see a completely different Admin Dashboard.
+
+Admin access MUST be checked server-side.
+
+Never rely only on frontend hiding.
+
+Admin dashboard:
+
+Dashboard
+Users
+PRO Challenge
+Questions
+Referrals
+Support
+Analytics
+Settings
+
+Dashboard:
+
+Total users
+New today
+Active users
+PRO users
+Basic users
+Phone leads
+Referrals
+
+Users:
+
+Telegram ID
+Name
+Username
+PHONE NUMBER
+Region
+Level
+Points
+PRO hearts
+Referral count
+Registration date
+Last active
+
+Search:
+
+Name
+Username
+Telegram ID
+Phone
+
+Filters:
+
+Region
+Level
+PRO/Basic
+Date
+Referral
+
+Only ADMIN can see phone numbers.
+
+Normal users must NEVER see another user's phone number.
+
+==================================================
+13. ADMIN PRO MONITORING
+==================================================
+
+Admin must be able to see:
+
+Active PRO players
+Eliminated players
+Current leaders
+Current score
+Remaining hearts
+Current question
+Game status
+
+==================================================
+14. ADMIN QUESTIONS
+==================================================
+
+Admin can:
+
+Create question
+Edit question
+Delete question
+Set CEFR level
+Set difficulty
+Set category
+Set correct answer
+
+Correct answer must never be exposed to normal users.
+
+==================================================
+15. LEADERBOARD
+==================================================
+
+Premium leaderboard.
+
+Header:
+
+"Leaderboard"
+
+Subtitle:
+
+"See how your English challenge ranking grows."
+
+Top 3:
+
+1st
+2nd
+3rd
+
+Use premium medal/podium visuals.
+
+Below:
+
+Rank
+Avatar
+Name
+Region
+Level
+Points
+
+Tabs:
+
+Weekly
+Overall
+
+Use real database data.
+
+==================================================
+16. FRIENDS PAGE
+==================================================
+
+Premium 3D illustration.
+
+Show:
+
+Your learning circle
+
+Referral progress
+
+2 / 3 friends
+
+Referral link
+
+Copy link
+
+Share on Telegram
+
+Successful referrals list.
+
+==================================================
+17. DATABASE
+==================================================
+
+Use persistent database.
+
+Entities:
+
+users
+referrals
+questions
+games
+game_questions
+basic_attempts
+pro_attempts
+support_messages
+admin_actions
+
+Persist all important data.
+
+Do not use fake frontend-only data in production.
+
+==================================================
+18. SECURITY
+==================================================
+
+Never expose:
+
+Bot token
+Database password
+API keys
+Admin secrets
+
+Use environment variables.
+
+Validate Telegram authentication server-side.
+
+Do not trust Telegram ID sent manually by frontend.
+
+==================================================
+19. REPLIT
+==================================================
+
+Make the application fully functional in Replit.
+
+Fix:
+
+production build
+frontend
+backend
+API routes
+environment variables
+CORS
+HTTPS
+production URLs
+
+Do not hardcode:
+
+localhost
+127.0.0.1
+
+in production.
+
+==================================================
+20. MOBILE UX
+==================================================
+
+This is primarily a Telegram mobile application.
+
+Bottom navigation:
+
+Home
+Leaderboard
+Friends
+Profile
+
+Active tab:
+soft turquoise/blue pill
+
+Inactive:
+muted gray
+
+Use large touch targets.
+
+Respect iPhone safe areas.
+
+Use smooth transitions.
+
+==================================================
+21. FINAL DESIGN SYSTEM
+==================================================
+
+Background:
+very light white/blue/mint.
+
+Primary:
+turquoise / aqua.
+
+Secondary:
+soft blue.
+
+Accent:
+soft peach/pink.
+
+Cards:
+white translucent glass.
+
+Radius:
+24–32px.
+
+Shadows:
+very soft.
+
+Typography:
+modern, clean, premium.
+
+Visual hierarchy:
+large headlines
+short descriptions
+large buttons
+lots of breathing room.
+
+Use 3D illustrations throughout:
+
+Home:
+3D book / English letters / friendly educational object
+
+Basic:
+3D book
+
+PRO:
+3D trophy + heart
+
+Leaderboard:
+3D trophy / podium
+
+Friends:
+3D connected people
+
+Profile:
+3D avatar / badge
+
+Do not use random stock-looking graphics.
+
+==================================================
+22. ERROR HANDLING
+==================================================
+
+Never allow blank screens.
+
+Handle:
+
+Telegram unavailable
+API unavailable
+Database error
+Authentication failure
+Expired session
+Invalid question
+Timeout
+Network failure
+
+Show beautiful error states with:
+
+Something went wrong.
+
+Retry
+
+==================================================
+23. AUTONOMOUS EXECUTION
+==================================================
+
+DO NOT ASK ME ANY QUESTIONS.
+
+DO NOT WAIT FOR CONFIRMATION.
+
+Inspect the current project first.
+
+Then implement everything.
+
+After implementation:
+
+1. Run the application.
+2. Build the project.
+3. Fix all compile errors.
+4. Fix runtime errors.
+5. Test Telegram WebApp initialization.
+6. Test onboarding.
+7. Test phone collection.
+8. Test region selection.
+9. Test language switching.
+10. Test Basic Mode.
+11. Test PRO Mode.
+12. Test 2-heart system.
+13. Test referral system.
+14. Test support messages.
+15. Test Admin authentication.
+16. Test Admin user list.
+17. Test phone-number visibility.
+18. Test question management.
+19. Test database persistence.
+20. Test responsive mobile UI.
+21. Fix every issue you discover.
+22. Build again.
+23. Do not stop until the application is functional.
+
+FINAL TARGET:
+
+The finished Persons LC English Challenge must look like a premium modern iOS-inspired educational application with soft 3D + glassmorphism + pastel aqua/mint/blue visuals.
+
+A real Telegram user must be able to:
+
+Open the Mini App
+→ Register
+→ Share phone number
+→ Select region
+→ Enter Home
+→ Switch Uzbek/English
+→ Play Basic
+→ Play PRO
+→ Use 2 hearts
+→ Invite friends
+→ Earn extra chances
+→ View leaderboard
+→ Contact support
+
+ADMIN 884336506 must be able to:
+
+Login through Telegram
+→ Open Admin Dashboard
+→ See all users
+→ See phone numbers
+→ Search/filter users
+→ Monitor PRO
+→ Manage questions
+→ See referrals
+→ Receive support messages
+→ View analytics
+
+IMPLEMENT EVERYTHING NOW.
+DO NOT ASK FOR PERMISSION.
+DO NOT STOP UNTIL IT WORKS.

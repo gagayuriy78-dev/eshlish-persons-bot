@@ -1,0 +1,106 @@
+import telebot
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+
+bot = telebot.TeleBot("SIZNING_TOKENINGIZ")
+
+# Vaqtinchalik ma'lumotlar bazasi (Ism, ball, daraja)
+users_db = {}
+
+# Asosiy menyu klaviaturasi
+def main_menu():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add(
+        KeyboardButton("🎓 Testni boshlash"),
+        KeyboardButton("👤 Profil"),
+        KeyboardButton("🏆 Reyting"),
+        KeyboardButton("📞 Bepul dars")
+    )
+    return markup
+
+# Orqaga qaytish klaviaturasi
+def back_menu():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(KeyboardButton("⬅️ Bosh menyu"))
+    return markup
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    user_id = message.from_user.id
+    if user_id not in users_db:
+        users_db[user_id] = {"name": message.from_user.first_name, "score": 0, "level": "Noma'lum"}
+    
+    bot.send_message(message.chat.id, 
+                     "Assalomu alaykum! Persons LC botiga xush kelibsiz.\nO'z darajangizni sinab ko'ring va sovrinlar yutib oling!", 
+                     reply_markup=main_menu())
+
+# Asosiy menyu tugmalarini boshqarish
+@bot.message_handler(func=lambda message: message.text in ["👤 Profil", "🏆 Reyting", "📞 Bepul dars", "⬅️ Bosh menyu"])
+def handle_menu(message):
+    user_id = message.from_user.id
+    text = message.text
+
+    if text == "👤 Profil":
+        stats = users_db.get(user_id, {"score": 0, "level": "Noma'lum"})
+        bot.send_message(message.chat.id, f"👤 Ism: {message.from_user.first_name}\n🏆 Ball: {stats['score']}\n📊 Daraja: {stats['level']}", reply_markup=main_menu())
+    
+    elif text == "🏆 Reyting":
+        # Ball bo'yicha saralash va top 5 talikni chiqarish
+        sorted_users = sorted(users_db.items(), key=lambda x: x[1]['score'], reverse=True)[:5]
+        leaderboard = "🏆 Top 5 O'quvchilar:\n\n"
+        for i, (uid, data) in enumerate(sorted_users, 1):
+            leaderboard += f"{i}. {data['name']} — {data['score']} ball\n"
+        bot.send_message(message.chat.id, leaderboard, reply_markup=main_menu())
+
+    elif text == "📞 Bepul dars":
+        cta_text = ("🎯 Ingliz tilida gapirishni tezroq o'rganmoqchimisiz?\n\n"
+                    "Sizni Persons LC dagi bepul sinov darsimizga taklif qilamiz. "
+                    "Hoziroq joyingizni band qiling va o'z darajangizga mos guruhga qo'shiling!\n\n"
+                    "Murojaat uchun: +998 90 123 45 67\nManzil: [Markaz manzili]")
+        bot.send_message(message.chat.id, cta_text, reply_markup=main_menu())
+        
+    elif text == "⬅️ Bosh menyu":
+        bot.send_message(message.chat.id, "Bosh menyudasiz:", reply_markup=main_menu())
+
+# Testni boshlash va Daraja tanlash
+@bot.message_handler(func=lambda message: message.text == "🎓 Testni boshlash")
+def choose_level(message):
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add("🟢 Oson", "🟡 O'rta", "🔴 Murakkab", "⬅️ Bosh menyu")
+    bot.send_message(message.chat.id, "Qiyinlik darajasini tanlang:", reply_markup=markup)
+
+@bot.message_handler(func=lambda message: message.text in ["🟢 Oson", "🟡 O'rta", "🔴 Murakkab"])
+def choose_category(message):
+    users_db[message.from_user.id]["level"] = message.text
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    markup.add("📝 Grammatika", "🔤 Yaqin so'zlar", "⬅️ Bosh menyu")
+    bot.send_message(message.chat.id, "Yo'nalishni tanlang:", reply_markup=markup)
+
+# Savol berish va javobni kutish
+@bot.message_handler(func=lambda message: message.text in ["📝 Grammatika", "🔤 Yaqin so'zlar"])
+def ask_question(message):
+    # Namuna savol. Tugmalar olib tashlanadi, foydalanuvchi klaviaturada yozishi kerak
+    msg = bot.send_message(message.chat.id, 
+                           "Savol: Bo'sh joyni to'ldiring.\nI usually _____ my homework in the evening.\n\nJavobingizni so'z ko'rinishida yozib yuboring:", 
+                           reply_markup=back_menu())
+    bot.register_next_step_handler(msg, check_answer)
+
+# Javobni tekshirish va tushuntirish
+def check_answer(message):
+    if message.text == "⬅️ Bosh menyu":
+        handle_menu(message)
+        return
+
+    user_answer = message.text.strip().lower()
+    user_id = message.from_user.id
+
+    if user_answer == "do":
+        users_db[user_id]["score"] += 10
+        bot.send_message(message.chat.id, 
+                         "✅ To'g'ri javob! +10 ball.\n\n*Izoh:* 'Homework' (uy vazifasi) so'zi bilan doim 'do' ishlatiladi. 'Make' emas.", 
+                         parse_mode="Markdown", reply_markup=main_menu())
+    else:
+        bot.send_message(message.chat.id, 
+                         f"❌ Noto'g'ri javob.\n\n*Izoh:* Siz '{user_answer}' deb yozdingiz. Aslida to'g'ri javob 'do' bo'lishi kerak edi. Ingliz tilida uy vazifasini bajarish 'do homework' deyiladi.", 
+                         parse_mode="Markdown", reply_markup=main_menu())
+
+bot.polling()

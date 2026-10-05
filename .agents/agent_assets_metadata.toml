@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "c-ugDeUl0igkCljhZCT4B"
+uri = "file://.agents/outputs/ishlish-persons-source.zip"
+type = "unspecified"
+title = "ISHLISH PERSONS — updated source ZIP"
+description = "342-file source archive including the Telegram auth diagnosis logs; verified with no hardcoded Telegram token or old bot username."
+logical_id = "4fed59f5-bbdf-49b3-b123-59d374718adf"
+content_hash = "sha256:2db1cf88347e20cc0024cc0cde70e9a45f90752a68c6fd3b4d673ec61107e236"
+size = 710022
+mtime_ms = 1791209843659
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:42f4c3c8-cb24-4027-b5b5-96b76f4f6625/4fed59f5-bbdf-49b3-b123-59d374718adf/df723c13-3d97-4491-826b-4b28a32e461b"
+storage_version_token = "1791209866232125"
+content_type = "application/octet-stream"

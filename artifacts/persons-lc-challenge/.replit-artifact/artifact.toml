@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "ISHLISH PERSONS"
+description = "ISHLISH PERSONS is a Telegram Mini App for English level tests, certificates, referrals, and a PRO challenge, connected to its Express API."
+version = "1.0.0"
+id = "artifacts/persons-lc-challenge"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22084
+
+[services.development]
+run = "pnpm --filter @workspace/persons-lc-challenge run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/persons-lc-challenge", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/persons-lc-challenge/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22084"
+BASE_PATH = "/"

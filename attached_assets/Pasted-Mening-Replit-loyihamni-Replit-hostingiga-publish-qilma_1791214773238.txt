@@ -1,0 +1,68 @@
+Mening Replit loyihamni Replit hostingiga publish qilma. Replit creditlarim tugagan.
+
+Men botni o'zimdagi Google Cloud serverga 24/7 deploy qilmoqchiman.
+
+Menga loyihani Google Cloud serverga production uchun tayyorlab ber.
+
+MUHIM API:
+Quiet Progress API allaqachon Google Cloud Run'da ishlayapti:
+
+QP_API=https://quiet-progress-720242842790.europe-west1.run.app/api
+
+API hujjatiga ko'ra:
+- POST /api/auth/login orqali bot login qiladi
+- javobdan access_token olinadi
+- keyingi requestlarda Authorization: Bearer <access_token> yuboriladi
+- token 7 kun amal qiladi
+- 401 session_expired/not_authenticated bo'lsa bot avtomatik qayta login qilishi kerak
+
+Bot uchun environment variables:
+
+BOT_TOKEN=...
+QP_API=https://quiet-progress-720242842790.europe-west1.run.app/api
+QP_LOGIN=...
+QP_PASSWORD=...
+
+BOT_TOKEN, QP_LOGIN va QP_PASSWORD qiymatlarini kodga yozma. Ular environment variable orqali olinishi kerak.
+
+VAZIFA:
+
+1. Loyihadagi botni Google Cloud VM/serverda 24/7 ishlaydigan production deploymentga tayyorla.
+2. Polling ishlatilsa, pollingni production uchun to'g'ri sozla.
+3. Bot processi crash bo'lsa avtomatik qayta ishga tushadigan qil.
+4. Server reboot bo'lganda bot avtomatik ishga tushsin.
+5. Buning uchun systemd service konfiguratsiyasini tayyorla.
+6. Python virtual environment va requirements.txt ni to'g'ri sozla.
+7. .env yoki secretlarni GitHub/repository ichiga qo'shma.
+8. QP API bilan login flow'ni tekshir.
+9. API access_token 7 kunlik ekanini hisobga ol va 401 kelganda bir marta qayta login qil.
+10. Noto'g'ri password sabab cheksiz login loop qilma.
+11. Telegram BOT_TOKEN orqali bot ishga tushishini tekshir.
+12. /requests, approve, reject va stats funksiyalarini buzma.
+13. Botni oddiy terminalda emas, systemd orqali 24/7 ishlaydigan qilib tayyorla.
+14. Loglarni journalctl orqali ko'rish mumkin bo'lsin.
+15. Health/status tekshirish uchun kerakli commandlarni ber.
+
+SECURITY:
+- Tokenlarni kodga hardcode qilma.
+- BOT_TOKEN, QP_LOGIN, QP_PASSWORD ni log qilma.
+- GitHub'ga .env yuborma.
+- Agar .env ishlatilsa .gitignore'ga qo'sh.
+- /requests komandasi faqat ruxsat berilgan Telegram ID'larga ishlashini ta'minla. API hujjatida ham bu xavfsizlik masalasi alohida ko'rsatilgan.
+
+Menga oxirida aynan Google Cloud VM serverda bajaradigan commandlarni bosqichma-bosqich ber:
+
+1. Python o'rnatish
+2. GitHub'dan projectni olish
+3. virtualenv yaratish
+4. dependencies o'rnatish
+5. environment variables sozlash
+6. systemd service yaratish
+7. service'ni ishga tushirish
+8. status tekshirish
+9. loglarni ko'rish
+10. server rebootdan keyin avtomatik ishlayotganini tekshirish
+
+Replit deployment/publish qilishga urinma.
+
+Kodga imkon qadar kam o'zgartirish kirit. Mavjud funksiyalarni saqla.
