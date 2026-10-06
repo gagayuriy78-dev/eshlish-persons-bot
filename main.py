@@ -38,6 +38,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 TOKEN = os.environ.get("TEST_TOKEN") or os.environ.get("BOT_TOKEN")
 WEB_APP_URL = os.getenv("WEB_APP_URL", "").strip()
+# Page that sends people to t.me/personslc (see main(): the chat menu button).
+CHANNEL_MENU_URL = os.getenv(
+    "CHANNEL_MENU_URL", "https://quiet-progress-720242842790.europe-west1.run.app/channel.html"
+).strip()
 DATABASE_PATH = Path(os.getenv("BOT_DATABASE_PATH", "bot_database.db"))
 QUESTIONS_CSV_PATH = Path("questions.csv")
 
@@ -307,7 +311,7 @@ def get_web_app_start_keyboard(url: str = WEB_APP_URL) -> InlineKeyboardMarkup:
     """Inline button that opens the Telegram Mini App with signed initData."""
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="ISHLISH PERSONS'ni ochish", web_app=WebAppInfo(url=url))]
+            [InlineKeyboardButton(text="Start", web_app=WebAppInfo(url=url))]
         ]
     )
 
@@ -1196,15 +1200,20 @@ async def main() -> None:
     imported_count = import_questions_from_csv()
     bot_info = await bot.get_me()
     bot_username = bot_info.username or ""
-    if WEB_APP_URL:
+    # The chat menu button leads to the Persons channel (the Mini App opens from
+    # the «Start» button under /start). Menu buttons can't be plain links, so it
+    # opens a tiny page that hands over to the channel and closes itself.
+    if CHANNEL_MENU_URL:
         try:
             await bot.set_chat_menu_button(
-                menu_button=MenuButtonWebApp(text="ISHLISH", web_app=WebAppInfo(url=WEB_APP_URL))
+                menu_button=MenuButtonWebApp(
+                    text="Persons oilasiga qo'shilish", web_app=WebAppInfo(url=CHANNEL_MENU_URL)
+                )
             )
         except TelegramBadRequest as error:
             print(f"Menu tugmasini o'rnatib bo'lmadi: {error}")
     else:
-        print("WEB_APP_URL sozlanmagan; Mini App menyu tugmasi o'rnatilmadi.")
+        print("CHANNEL_MENU_URL sozlanmagan; menu tugmasi o'rnatilmadi.")
     print(
         "Bot ishga tushdi va test o'tkazishga tayyor..."
         f" CSV dan {imported_count} ta yangi savol yuklandi."
