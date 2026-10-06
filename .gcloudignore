@@ -1,0 +1,16 @@
+# Upload only what the Mini App image needs (gcloud run deploy --source .).
+.git/
+.gitignore
+.agents/
+.config/
+.conversation/
+.pythonlibs/
+attached_assets/
+**/node_modules/
+**/dist/
+*.db
+*.db-shm
+*.db-wal
+*.bundle
+blank_python_project.egg-info/
+__pycache__/

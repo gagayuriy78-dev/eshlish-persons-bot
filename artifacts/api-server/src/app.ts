@@ -38,6 +38,16 @@ app.use("/api", (_req: Request, res: Response) => {
   res.status(404).json({ error: "Not found", code: "NOT_FOUND" });
 });
 
+// Single-service hosting (Cloud Run): serve the built Mini App from STATIC_DIR,
+// with index.html for client-side routes. On Replit a proxy did this instead.
+const staticDir = process.env["STATIC_DIR"];
+if (staticDir) {
+  app.use(express.static(staticDir, { index: "index.html", maxAge: "1h" }));
+  app.get(/^(?!\/api\/).*/, (_req: Request, res: Response) => {
+    res.sendFile("index.html", { root: staticDir, headers: { "Cache-Control": "no-cache" } });
+  });
+}
+
 app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof HttpError) {
     res.status(err.status).json({ error: err.message, code: err.code });

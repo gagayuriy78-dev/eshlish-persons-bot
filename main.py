@@ -8,7 +8,6 @@ from question_bank import import_question_rows
 import io
 import os
 import re
-import threading
 from urllib.parse import urlencode
 import random
 import sqlite3
@@ -29,20 +28,12 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
-    MenuButtonDefault,
     MenuButtonWebApp,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
     WebAppInfo,
 )
 from PIL import Image, ImageDraw, ImageFont
-from quiet_progress import (
-    DEFAULT_QP_API,
-    QuietProgressClient,
-    QuietProgressConfigurationError,
-    QuietProgressError,
-    is_complete,
-)
 
 
 TOKEN = os.environ.get("TEST_TOKEN") or os.environ.get("BOT_TOKEN")
@@ -64,9 +55,6 @@ if not TOKEN:
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 bot_username = ""
-qp_client: QuietProgressClient | None = None
-qp_client_lock = threading.Lock()
-qp_disabled_reason: str | None = None
 
 
 class QuizState(StatesGroup):
@@ -74,12 +62,6 @@ class QuizState(StatesGroup):
 
     testing = State()
     sample_answering = State()
-
-
-class LeadState(StatesGroup):
-    """«📞 Bepul dars»: waiting for the phone number of a free-lesson lead."""
-
-    awaiting_contact = State()
 
 
 class AdminState(StatesGroup):
@@ -632,94 +614,15 @@ async def start_handler(message: types.Message, state: FSMContext) -> None:
                 (first_name, message.from_user.id),
             )
 
-    if await begin_registration(message, state, referral_id):
-        return
-    await send_welcome(message, first_name, referral_id)
-
-
-async def send_welcome(message: types.Message, first_name: str, referral_id: int | None) -> None:
-    """The ISHLISH PERSONS welcome: the Mini App button, or the chat menu when
-    WEB_APP_URL is not configured (Telegram rejects a web_app button with an empty URL)."""
-    if WEB_APP_URL:
-        reply_markup = get_web_app_start_keyboard(build_web_app_url(message.from_user.id, referral_id))
-        call_to_action = "Boshlash uchun quyidagi tugmani bosing."
-    else:
-        reply_markup = get_main_menu_keyboard()
-        call_to_action = "Boshlash uchun menyudan «🎓 Testni boshlash»ni tanlang."
     await message.answer(
         f"Assalomu alaykum, {first_name}!\n\n"
         "ISHLISH PERSONS'ga xush kelibsiz.\n"
         "Darajangizni aniqlang, PRO rejimda 1 000 000 so'mlik sovrin uchun bellashing.\n\n"
-        f"{call_to_action}",
-        reply_markup=reply_markup,
+        "Boshlash uchun quyidagi tugmani bosing.",
+        reply_markup=get_web_app_start_keyboard(
+            build_web_app_url(message.from_user.id, referral_id)
+        ),
     )
-
-
-# ---------------------------------------------------------------- registration
-# /start sends people who have not registered yet to the registration Mini App
-# (the Quiet Progress site's /miniapp.html): phone via Telegram's signed contact
-# sharing, then first name, last name, address and age. The site checks the
-# Telegram signatures, saves the person, and messages them and the admins.
-
-
-def registration_webapp_url() -> str:
-    """REGISTRATION_WEBAPP_URL, or /miniapp.html next to the Quiet Progress API."""
-    explicit = os.getenv("REGISTRATION_WEBAPP_URL", "").strip()
-    if explicit:
-        return explicit
-    api = os.getenv("QP_API", DEFAULT_QP_API).strip().rstrip("/")
-    return (api[: -len("/api")] if api.endswith("/api") else api) + "/miniapp.html"
-
-
-REGISTRATION_WEBAPP_URL = registration_webapp_url()
-
-
-def get_qp_client() -> QuietProgressClient | None:
-    """The registration API client, or None when QP_BOT_TOKEN is not configured."""
-    global qp_client, qp_disabled_reason
-    with qp_client_lock:
-        if qp_client is None and qp_disabled_reason is None:
-            try:
-                qp_client = QuietProgressClient(
-                    api_base=os.getenv("QP_API", DEFAULT_QP_API),
-                    bot_token=os.getenv("QP_BOT_TOKEN"),
-                )
-            except QuietProgressConfigurationError as error:
-                qp_disabled_reason = str(error)
-                print(f"Ro'yxatdan o'tish o'chirilgan: {qp_disabled_reason}")
-        return qp_client
-
-
-def get_registration_keyboard() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📝 Ro'yxatdan o'tish", web_app=WebAppInfo(url=REGISTRATION_WEBAPP_URL))]
-        ]
-    )
-
-
-async def begin_registration(message: types.Message, state: FSMContext, referral_id: int | None) -> bool:
-    """Offer the registration Mini App; False when the user is already registered
-    or registration is unavailable, so the bot keeps working either way."""
-    client = get_qp_client()
-    # Telegram only opens Mini Apps over HTTPS.
-    if client is None or not REGISTRATION_WEBAPP_URL.startswith("https://"):
-        return False
-    try:
-        contact = await asyncio.to_thread(client.get_contact, message.from_user.id)
-    except QuietProgressError as error:
-        print(f"Ro'yxatni tekshirib bo'lmadi: {error}")
-        return False
-    if is_complete(contact):
-        return False
-    await message.answer(
-        f"Assalomu alaykum, {message.from_user.first_name}!\n\n"
-        "Botdan foydalanishdan oldin qisqa ro'yxatdan o'ting: telefon raqam, "
-        "ism, familiya, manzil va yosh.\n\n"
-        "Quyidagi tugmani bosing 👇",
-        reply_markup=get_registration_keyboard(),
-    )
-    return True
 
 
 @dp.message(F.text == "🎓 Testni boshlash")
@@ -742,7 +645,7 @@ async def test_menu(message: types.Message, state: FSMContext) -> None:
         ]
     )
 )
-async def main_menu_action(message: types.Message, state: FSMContext) -> None:
+async def main_menu_action(message: types.Message) -> None:
     """Handle profile, leaderboard, and free-lesson menu actions."""
     if message.text == "👤 Profil":
         with sqlite3.connect(DATABASE_PATH) as connection:
@@ -804,7 +707,6 @@ async def main_menu_action(message: types.Message, state: FSMContext) -> None:
         )
         return
 
-    await state.set_state(LeadState.awaiting_contact)
     await message.answer(
         "🎯 Ingliz tilini tezroq o'rganmoqchimisiz?\n\n"
         "Bepul sinov darsimizga yozilish uchun "
@@ -813,8 +715,8 @@ async def main_menu_action(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@dp.message(LeadState.awaiting_contact, F.contact)
-async def handle_contact(message: types.Message, state: FSMContext) -> None:
+@dp.message(F.contact)
+async def handle_contact(message: types.Message) -> None:
     """Store a submitted phone number and notify administrators."""
     if not message.contact:
         return
@@ -827,7 +729,6 @@ async def handle_contact(message: types.Message, state: FSMContext) -> None:
         )
         return
 
-    await state.clear()
     phone = message.contact.phone_number
     with sqlite3.connect(DATABASE_PATH) as connection:
         connection.execute(
@@ -1234,7 +1135,7 @@ async def handle_test_answer(
             raise ValueError("stale question")
         selected_text = data["current_options"][int(option_index)]
     except (IndexError, KeyError, ValueError):
-        await callback.answer("Bu savol eskirgan.", show_alert=True)
+        await callback.answer("Bu savol eskirgan. /start ni bosing.", show_alert=True)
         return
 
     correct_answer = data["correct_ans"]
@@ -1303,13 +1204,7 @@ async def main() -> None:
         except TelegramBadRequest as error:
             print(f"Menu tugmasini o'rnatib bo'lmadi: {error}")
     else:
-        # Clear a Mini App button left by an earlier deployment, so the chat
-        # menu doesn't open an app that is no longer configured here.
-        try:
-            await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
-        except TelegramBadRequest as error:
-            print(f"Menu tugmasini tiklab bo'lmadi: {error}")
-        print("WEB_APP_URL sozlanmagan; Mini App menyu tugmasi o'chirildi.")
+        print("WEB_APP_URL sozlanmagan; Mini App menyu tugmasi o'rnatilmadi.")
     print(
         "Bot ishga tushdi va test o'tkazishga tayyor..."
         f" CSV dan {imported_count} ta yangi savol yuklandi."
