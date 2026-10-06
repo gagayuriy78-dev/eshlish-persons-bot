@@ -29,6 +29,7 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
+    MenuButtonDefault,
     MenuButtonWebApp,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
@@ -641,15 +642,20 @@ async def start_handler(message: types.Message, state: FSMContext) -> None:
 
 
 async def send_welcome(message: types.Message, first_name: str, referral_id: int | None) -> None:
-    """The ISHLISH PERSONS welcome with the Mini App button."""
+    """The ISHLISH PERSONS welcome: the Mini App button, or the chat menu when
+    WEB_APP_URL is not configured (Telegram rejects a web_app button with an empty URL)."""
+    if WEB_APP_URL:
+        reply_markup = get_web_app_start_keyboard(build_web_app_url(message.from_user.id, referral_id))
+        call_to_action = "Boshlash uchun quyidagi tugmani bosing."
+    else:
+        reply_markup = get_main_menu_keyboard()
+        call_to_action = "Boshlash uchun menyudan «🎓 Testni boshlash»ni tanlang."
     await message.answer(
         f"Assalomu alaykum, {first_name}!\n\n"
         "ISHLISH PERSONS'ga xush kelibsiz.\n"
         "Darajangizni aniqlang, PRO rejimda 1 000 000 so'mlik sovrin uchun bellashing.\n\n"
-        "Boshlash uchun quyidagi tugmani bosing.",
-        reply_markup=get_web_app_start_keyboard(
-            build_web_app_url(message.from_user.id, referral_id)
-        ),
+        f"{call_to_action}",
+        reply_markup=reply_markup,
     )
 
 
@@ -1414,7 +1420,13 @@ async def main() -> None:
         except TelegramBadRequest as error:
             print(f"Menu tugmasini o'rnatib bo'lmadi: {error}")
     else:
-        print("WEB_APP_URL sozlanmagan; Mini App menyu tugmasi o'rnatilmadi.")
+        # Clear a Mini App button left by an earlier deployment, so the chat
+        # menu doesn't open an app that is no longer configured here.
+        try:
+            await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
+        except TelegramBadRequest as error:
+            print(f"Menu tugmasini tiklab bo'lmadi: {error}")
+        print("WEB_APP_URL sozlanmagan; Mini App menyu tugmasi o'chirildi.")
     print(
         "Bot ishga tushdi va test o'tkazishga tayyor..."
         f" CSV dan {imported_count} ta yangi savol yuklandi."
