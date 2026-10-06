@@ -50,12 +50,13 @@ comma-separated allow-list to configure it through the environment.
 
 ## Registration (Quiet Progress database)
 
-On `/start`, a new user is asked once for their phone number (Telegram contact
-button), first name, last name, address and age. Each answer is saved to the
-Quiet Progress database through `POST /api/bot/contacts`, so the administrator
-panel at `/admin.html` shows partial registrations too; `/start` resumes at the
-first missing step. When the registration is complete, administrators get a
-message and the user sees the usual welcome.
+On `/start`, a user who has not registered yet gets a «📝 Ro'yxatdan o'tish»
+button that opens the registration Mini App on the Quiet Progress site
+(`/miniapp.html`, or `REGISTRATION_WEBAPP_URL`): phone number via Telegram's
+signed contact sharing, then first name, last name, address and age. The site
+verifies the Telegram signatures, saves the person (visible at `/admin.html`),
+and messages the user and the administrators. Registered users get the usual
+welcome.
 
 Set `QP_BOT_TOKEN` to the same value as `BOT_API_TOKEN` on the Quiet Progress
 server. The API defaults to the Quiet Progress endpoint and can be changed with

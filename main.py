@@ -76,14 +76,10 @@ class QuizState(StatesGroup):
     sample_answering = State()
 
 
-class RegistrationState(StatesGroup):
-    """/start registration saved to the Quiet Progress database."""
+class LeadState(StatesGroup):
+    """«📞 Bepul dars»: waiting for the phone number of a free-lesson lead."""
 
-    phone = State()
-    first_name = State()
-    last_name = State()
-    address = State()
-    age = State()
+    awaiting_contact = State()
 
 
 class AdminState(StatesGroup):
@@ -660,21 +656,22 @@ async def send_welcome(message: types.Message, first_name: str, referral_id: int
 
 
 # ---------------------------------------------------------------- registration
-# /start asks for phone, first name, last name, address and age once, saving
-# each answer to the Quiet Progress database (POST /api/bot/contacts) so the
-# admin panel sees partial registrations too. These handlers are registered
-# before the generic contact/text handlers so they win while a step is open.
+# /start sends people who have not registered yet to the registration Mini App
+# (the Quiet Progress site's /miniapp.html): phone via Telegram's signed contact
+# sharing, then first name, last name, address and age. The site checks the
+# Telegram signatures, saves the person, and messages them and the admins.
 
-REGISTRATION_STEPS = ("phone", "first_name", "last_name", "address", "age")
-REGISTRATION_PROMPTS = {
-    "phone": "Ro'yxatdan o'tish uchun telefon raqamingizni yuboring 👇",
-    "first_name": "Ismingizni yozing:",
-    "last_name": "Familiyangizni yozing:",
-    "address": "Manzilingizni yozing (shahar/tuman, ko'cha):",
-    "age": "Yoshingizni yozing (faqat raqam, masalan: 25):",
-}
-# Letters (any script), with apostrophes/hyphens/spaces inside: O'tkir, Abdul-Aziz.
-NAME_PATTERN = re.compile(r"^[^\W\d_](?:[^\W\d_]|['’ʻʼ`\- ]){1,79}$")
+
+def registration_webapp_url() -> str:
+    """REGISTRATION_WEBAPP_URL, or /miniapp.html next to the Quiet Progress API."""
+    explicit = os.getenv("REGISTRATION_WEBAPP_URL", "").strip()
+    if explicit:
+        return explicit
+    api = os.getenv("QP_API", DEFAULT_QP_API).strip().rstrip("/")
+    return (api[: -len("/api")] if api.endswith("/api") else api) + "/miniapp.html"
+
+
+REGISTRATION_WEBAPP_URL = registration_webapp_url()
 
 
 def get_qp_client() -> QuietProgressClient | None:
@@ -693,34 +690,20 @@ def get_qp_client() -> QuietProgressClient | None:
         return qp_client
 
 
-def get_share_phone_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="📱 Raqamni yuborish", request_contact=True)]],
-        resize_keyboard=True,
-        one_time_keyboard=True,
-    )
-
-
-def next_registration_step(contact: dict[str, Any] | None) -> str | None:
-    for step in REGISTRATION_STEPS:
-        if not contact or contact.get(step) in (None, ""):
-            return step
-    return None
-
-
-async def ask_registration_step(message: types.Message, state: FSMContext, step: str) -> None:
-    await state.set_state(getattr(RegistrationState, step))
-    await message.answer(
-        REGISTRATION_PROMPTS[step],
-        reply_markup=get_share_phone_keyboard() if step == "phone" else ReplyKeyboardRemove(),
+def get_registration_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📝 Ro'yxatdan o'tish", web_app=WebAppInfo(url=REGISTRATION_WEBAPP_URL))]
+        ]
     )
 
 
 async def begin_registration(message: types.Message, state: FSMContext, referral_id: int | None) -> bool:
-    """Start (or resume) registration; False when the user is already registered
-    or the API is unavailable, so the bot keeps working either way."""
+    """Offer the registration Mini App; False when the user is already registered
+    or registration is unavailable, so the bot keeps working either way."""
     client = get_qp_client()
-    if client is None:
+    # Telegram only opens Mini Apps over HTTPS.
+    if client is None or not REGISTRATION_WEBAPP_URL.startswith("https://"):
         return False
     try:
         contact = await asyncio.to_thread(client.get_contact, message.from_user.id)
@@ -729,116 +712,14 @@ async def begin_registration(message: types.Message, state: FSMContext, referral
         return False
     if is_complete(contact):
         return False
-    await state.update_data(referral_id=referral_id)
-    if contact is None:
-        await message.answer(
-            f"Assalomu alaykum, {message.from_user.first_name}!\n"
-            "Botdan foydalanishdan oldin qisqa ro'yxatdan o'ting."
-        )
-    await ask_registration_step(message, state, next_registration_step(contact) or "phone")
-    return True
-
-
-async def save_registration_field(message: types.Message, state: FSMContext, **fields: Any) -> bool:
-    client = get_qp_client()
-    if client is None:
-        await state.clear()
-        return False
-    try:
-        contact = await asyncio.to_thread(
-            client.save_contact,
-            message.from_user.id,
-            username=message.from_user.username,
-            **fields,
-        )
-    except QuietProgressError as error:
-        print(f"Ro'yxat ma'lumotini saqlab bo'lmadi: {error}")
-        await message.answer("⚠️ Ma'lumotni saqlab bo'lmadi. Bir ozdan keyin qayta yuboring.")
-        return False
-
-    step = next_registration_step(contact)
-    if step is not None:
-        await ask_registration_step(message, state, step)
-        return True
-
-    data = await state.get_data()
-    await state.clear()
-    await message.answer("✅ Rahmat! Siz ro'yxatdan o'tdingiz.", reply_markup=ReplyKeyboardRemove())
-    await notify_admins_about_registration(message, contact)
-    await send_welcome(message, contact.get("first_name") or message.from_user.first_name, data.get("referral_id"))
-    return True
-
-
-async def notify_admins_about_registration(message: types.Message, contact: dict[str, Any]) -> None:
-    text = (
-        "🆕 Yangi ro'yxatdan o'tish\n\n"
-        f"Ism: {contact.get('first_name')} {contact.get('last_name')}\n"
-        f"Telefon: {contact.get('phone')}\n"
-        f"Manzil: {contact.get('address')}\n"
-        f"Yosh: {contact.get('age')}\n"
-        f"ID: {message.from_user.id}"
-    )
-    for admin_id in ADMIN_IDS:
-        try:
-            await bot.send_message(admin_id, text)
-        except (TelegramBadRequest, TelegramForbiddenError):
-            pass
-
-
-@dp.message(RegistrationState.phone, F.contact)
-async def registration_phone(message: types.Message, state: FSMContext) -> None:
-    if message.contact.user_id and message.contact.user_id != message.from_user.id:
-        await message.answer(
-            "Iltimos, o'zingizning raqamingizni tugma orqali yuboring.",
-            reply_markup=get_share_phone_keyboard(),
-        )
-        return
-    phone = message.contact.phone_number.strip()
-    if not phone.startswith("+"):
-        phone = "+" + phone
-    with sqlite3.connect(DATABASE_PATH) as connection:
-        connection.execute(
-            "UPDATE users SET phone = ? WHERE telegram_id = ?",
-            (phone, message.from_user.id),
-        )
-    await save_registration_field(message, state, phone=phone)
-
-
-@dp.message(RegistrationState.phone)
-async def registration_phone_text(message: types.Message) -> None:
     await message.answer(
-        "Raqamni «📱 Raqamni yuborish» tugmasi orqali yuboring.",
-        reply_markup=get_share_phone_keyboard(),
+        f"Assalomu alaykum, {message.from_user.first_name}!\n\n"
+        "Botdan foydalanishdan oldin qisqa ro'yxatdan o'ting: telefon raqam, "
+        "ism, familiya, manzil va yosh.\n\n"
+        "Quyidagi tugmani bosing 👇",
+        reply_markup=get_registration_keyboard(),
     )
-
-
-@dp.message(RegistrationState.first_name)
-@dp.message(RegistrationState.last_name)
-async def registration_name(message: types.Message, state: FSMContext) -> None:
-    field = "first_name" if await state.get_state() == RegistrationState.first_name.state else "last_name"
-    value = " ".join((message.text or "").split())
-    if not NAME_PATTERN.fullmatch(value):
-        await message.answer("Faqat harflardan iborat bo'lsin (2–80 belgi). Qayta yozing:")
-        return
-    await save_registration_field(message, state, **{field: value})
-
-
-@dp.message(RegistrationState.address)
-async def registration_address(message: types.Message, state: FSMContext) -> None:
-    value = " ".join((message.text or "").split())
-    if not 3 <= len(value) <= 300 or value.startswith("/"):
-        await message.answer("Manzilni to'liqroq yozing (3–300 belgi):")
-        return
-    await save_registration_field(message, state, address=value)
-
-
-@dp.message(RegistrationState.age)
-async def registration_age(message: types.Message, state: FSMContext) -> None:
-    value = (message.text or "").strip()
-    if not value.isdigit() or not 5 <= int(value) <= 100:
-        await message.answer("Yoshni raqam bilan yozing (5 dan 100 gacha):")
-        return
-    await save_registration_field(message, state, age=int(value))
+    return True
 
 
 @dp.message(F.text == "🎓 Testni boshlash")
@@ -861,7 +742,7 @@ async def test_menu(message: types.Message, state: FSMContext) -> None:
         ]
     )
 )
-async def main_menu_action(message: types.Message) -> None:
+async def main_menu_action(message: types.Message, state: FSMContext) -> None:
     """Handle profile, leaderboard, and free-lesson menu actions."""
     if message.text == "👤 Profil":
         with sqlite3.connect(DATABASE_PATH) as connection:
@@ -923,6 +804,7 @@ async def main_menu_action(message: types.Message) -> None:
         )
         return
 
+    await state.set_state(LeadState.awaiting_contact)
     await message.answer(
         "🎯 Ingliz tilini tezroq o'rganmoqchimisiz?\n\n"
         "Bepul sinov darsimizga yozilish uchun "
@@ -931,8 +813,8 @@ async def main_menu_action(message: types.Message) -> None:
     )
 
 
-@dp.message(F.contact)
-async def handle_contact(message: types.Message) -> None:
+@dp.message(LeadState.awaiting_contact, F.contact)
+async def handle_contact(message: types.Message, state: FSMContext) -> None:
     """Store a submitted phone number and notify administrators."""
     if not message.contact:
         return
@@ -945,6 +827,7 @@ async def handle_contact(message: types.Message) -> None:
         )
         return
 
+    await state.clear()
     phone = message.contact.phone_number
     with sqlite3.connect(DATABASE_PATH) as connection:
         connection.execute(
